@@ -1,0 +1,6 @@
+{
+  "name": "AdaptiveFlow",
+  "description": "An adaptive, icon-driven language flashcard application utilizing Zero-Language UI philosophy and real-time AI Tutor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

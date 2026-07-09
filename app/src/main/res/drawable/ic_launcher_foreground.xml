@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background glow/accent behind the book -->
+    <path
+        android:pathData="M54,54m-22,0a22,22 0,1 1,44 0a22,22 0,1 1,-44 0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="32"
+                android:startY="32"
+                android:endX="76"
+                android:endY="76"
+                android:type="linear">
+                <item android:color="#306366F1" android:offset="0.0"/> <!-- Translucent Indigo -->
+                <item android:color="#00A855F7" android:offset="1.0"/> <!-- Fully transparent Violet -->
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Flowing Waves Left 1 -->
+    <path
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M 28,44 C 20,48 18,58 24,66">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="28"
+                android:startY="44"
+                android:endX="24"
+                android:endY="66"
+                android:type="linear">
+                <item android:color="#6366F1" android:offset="0.0"/>
+                <item android:color="#A855F7" android:offset="1.0"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Flowing Waves Left 2 -->
+    <path
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M 22,37 C 12,44 10,58 18,69">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="22"
+                android:startY="37"
+                android:endX="18"
+                android:endY="69"
+                android:type="linear">
+                <item android:color="#3B82F6" android:offset="0.0"/>
+                <item android:color="#6366F1" android:offset="1.0"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Flowing Waves Right 1 -->
+    <path
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M 80,44 C 88,48 90,58 84,66">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="80"
+                android:startY="44"
+                android:endX="84"
+                android:endY="66"
+                android:type="linear">
+                <item android:color="#6366F1" android:offset="0.0"/>
+                <item android:color="#A855F7" android:offset="1.0"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Flowing Waves Right 2 -->
+    <path
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M 86,37 C 96,44 98,58 90,69">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="86"
+                android:startY="37"
+                android:endX="90"
+                android:endY="69"
+                android:type="linear">
+                <item android:color="#3B82F6" android:offset="0.0"/>
+                <item android:color="#6366F1" android:offset="1.0"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Open Book Pages Left (Solid Base) -->
+    <path
+        android:fillColor="#F1F5F9"
+        android:pathData="M 54,44 C 47,40 37,40 31,43 L 31,69 C 37,66 47,66 54,70 Z" />
+
+    <!-- Open Book Pages Right (Solid Base) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 54,44 C 61,40 71,40 77,43 L 77,69 C 71,66 61,66 54,70 Z" />
+
+    <!-- Book Page Lines Left (representing content/active flow) -->
+    <path
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeColor="#CBD5E1"
+        android:pathData="M 36,49 C 41,47 46,47 50,49 M 36,54 C 41,52 46,52 50,54 M 36,59 C 41,57 46,57 50,59" />
+
+    <!-- Book Page Lines Right (representing content/active flow) -->
+    <path
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeColor="#E2E8F0"
+        android:pathData="M 58,49 C 62,47 67,47 72,49 M 58,54 C 62,52 67,52 72,54 M 58,59 C 62,57 67,57 72,59" />
+
+    <!-- Book Spine/Center Bookmark ribbon (glowing orange/pink gradient accent) -->
+    <path
+        android:pathData="M 53,44 L 55,44 L 55,73 L 54,71 L 53,73 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="54"
+                android:startY="44"
+                android:endX="54"
+                android:endY="73"
+                android:type="linear">
+                <item android:color="#EC4899" android:offset="0.0"/> <!-- Hot Pink -->
+                <item android:color="#F59E0B" android:offset="1.0"/> <!-- Amber Glow -->
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>
