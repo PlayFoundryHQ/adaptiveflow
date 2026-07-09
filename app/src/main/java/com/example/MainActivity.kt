@@ -61,6 +61,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -1051,14 +1053,15 @@ fun ImportTab(viewModel: StudyViewModel) {
     LaunchedEffect(importState) {
         when (importState) {
             is StudyViewModel.ImportState.Success -> {
-                Toast.makeText(context, "Successfully parsed and saved deck!", Toast.LENGTH_SHORT).show()
+                // Field clearing happens immediately, but the importState itself is left as Success
+                // so the persistent banner below stays up until the user dismisses it - a plain
+                // Toast.LENGTH_SHORT was easy to miss at the exact moment the form silently reset.
                 rawText = ""
                 topicHint = ""
                 attachedFileUri = null
                 attachedFileName = ""
                 attachedFileSize = 0L
                 attachedFileMimeType = ""
-                viewModel.resetImportState()
             }
             else -> {}
         }
@@ -2136,6 +2139,49 @@ fun ImportTab(viewModel: StudyViewModel) {
                             imageVector = Icons.Default.Close,
                             contentDescription = "Dismiss",
                             tint = Color(0xFFC62828),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        if (currentImportState is StudyViewModel.ImportState.Success) {
+            item {
+                // Persistent, dismissible success banner - mirrors the error banner above. Replaces a
+                // plain Toast.LENGTH_SHORT that fired at the exact moment the form silently cleared,
+                // which was easy to miss.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFFE7F8EF))
+                        .border(1.dp, Color(0xFFA3E5C2), RoundedCornerShape(16.dp))
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFF1B8A4C),
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Text(
+                        text = "Deck saved: ${currentImportState.deckName}",
+                        color = Color(0xFF14532D),
+                        fontSize = 13.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = { viewModel.resetImportState() },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Dismiss",
+                            tint = Color(0xFF1B8A4C),
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -4922,6 +4968,7 @@ fun ApiKeySettingsDialog(
 ) {
     val customApiKey by viewModel.customApiKey.collectAsStateWithLifecycle()
     var inputKey by remember { mutableStateOf(customApiKey) }
+    var isKeyVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     AlertDialog(
@@ -5026,6 +5073,16 @@ fun ApiKeySettingsDialog(
                     modifier = Modifier.fillMaxWidth().testTag("api_key_input"),
                     shape = RoundedCornerShape(10.dp),
                     singleLine = true,
+                    visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { isKeyVisible = !isKeyVisible }) {
+                            Icon(
+                                imageVector = if (isKeyVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (isKeyVisible) "Hide API key" else "Show API key",
+                                tint = Color(0xFF64748B)
+                            )
+                        }
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF0054D1),
                         unfocusedBorderColor = Color(0xFFE2E8F0)
