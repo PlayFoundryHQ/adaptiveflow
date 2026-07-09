@@ -3,6 +3,7 @@ package com.example
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
@@ -43,6 +44,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -1232,6 +1234,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 selectedImportMode = modeKey
                                 rawText = "" // clear text on mode swap to keep it clean
                                 topicHint = ""
+                                // Also clear any attached file - otherwise a file attached under one
+                                // mode silently rides along into a later submission under another mode.
+                                attachedFileUri = null
+                                attachedFileName = ""
+                                attachedFileSize = 0L
+                                attachedFileMimeType = ""
                             }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
@@ -1719,10 +1727,11 @@ fun ImportTab(viewModel: StudyViewModel) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedButton(
-                            onClick = { 
+                            onClick = {
                                 rawText = "https://www.youtube.com/watch?v=Y8YAs_76Iio"
                                 topicHint = "French (song lyrics and idioms)"
                             },
+                            enabled = importState !is StudyViewModel.ImportState.Loading,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp),
                             border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
@@ -1731,10 +1740,11 @@ fun ImportTab(viewModel: StudyViewModel) {
                             Text("🇫🇷 French Song Lesson", fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         OutlinedButton(
-                            onClick = { 
+                            onClick = {
                                 rawText = "https://www.youtube.com/watch?v=pPy7643bZGo"
                                 topicHint = "Japanese (Tokyo travel phrases)"
                             },
+                            enabled = importState !is StudyViewModel.ImportState.Loading,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp),
                             border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
@@ -2118,14 +2128,17 @@ fun ImportTab(viewModel: StudyViewModel) {
                         fontSize = 13.sp,
                         modifier = Modifier.weight(1f)
                     )
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Dismiss",
-                        tint = Color(0xFFC62828),
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable { viewModel.resetImportState() }
-                    )
+                    IconButton(
+                        onClick = { viewModel.resetImportState() },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Dismiss",
+                            tint = Color(0xFFC62828),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
@@ -2149,6 +2162,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                 QuickSeedDeckButton(
                     title = "🇫🇷 French Culinary Terms",
                     desc = "Terms like Le pain, Le beurre, Le fromage",
+                    enabled = importState !is StudyViewModel.ImportState.Loading,
                     onClick = {
                         viewModel.importDeckFromRawText(
                             "Le pain: The bread\nLe beurre: The butter\nLe fromage: The cheese\nLe vin: The wine\nLe café: The coffee"
@@ -2159,6 +2173,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                 QuickSeedDeckButton(
                     title = "🇯🇵 Japanese Essential Travel",
                     desc = "Basic traveling phrases like Sumimasen, Arigatou",
+                    enabled = importState !is StudyViewModel.ImportState.Loading,
                     onClick = {
                         viewModel.importDeckFromRawText(
                             "Arigatou: Thank you (informal)\nSumimasen: Excuse me / Sorry\nKonnichiwa: Hello / Good afternoon\nSayounara: Goodbye\nKore wa ikura desu ka: How much is this?"
@@ -2174,6 +2189,7 @@ fun ImportTab(viewModel: StudyViewModel) {
 fun QuickSeedDeckButton(
     title: String,
     desc: String,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     val emoji = when {
@@ -2191,10 +2207,11 @@ fun QuickSeedDeckButton(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
             .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
-            .clickable { onClick() }
+            .clickable(enabled = enabled) { onClick() }
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -2243,6 +2260,7 @@ fun QuickSeedDeckButton(
 
 @Composable
 fun StudySessionScreen(viewModel: StudyViewModel) {
+    val context = LocalContext.current
     val deck by viewModel.currentDeck.collectAsStateWithLifecycle()
     val cards by viewModel.currentFlashcards.collectAsStateWithLifecycle()
     val currentIndex by viewModel.currentCardIndex.collectAsStateWithLifecycle()
@@ -2257,6 +2275,59 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
     var showTutorSheet by remember { mutableStateOf(false) }
     var showContextDrawer by remember { mutableStateOf(false) }
     var isSessionStarted by remember(deck?.id) { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+
+    // Without this, system back/gesture falls through to the Activity and exits the app entirely
+    // instead of returning to the deck library. Close any open overlay first, then fall back to
+    // leaving the session, so back behaves the same way tapping the in-app back arrow does.
+    BackHandler {
+        when {
+            showTutorSheet -> showTutorSheet = false
+            showContextDrawer -> showContextDrawer = false
+            else -> viewModel.clearActiveDeck()
+        }
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = Color.White,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.DeleteSweep,
+                    contentDescription = null,
+                    tint = Color(0xFFEF4444)
+                )
+            },
+            title = {
+                Text(
+                    text = "Delete \"${deck?.name ?: "this deck"}\"?",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E293B)
+                )
+            },
+            text = {
+                Text(
+                    text = "This permanently deletes every card and all study progress in this deck. This cannot be undone.",
+                    color = Color(0xFF64748B)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirmation = false
+                    viewModel.deleteCurrentDeck()
+                }) {
+                    Text("Delete", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text("Cancel", color = Color(0xFF64748B))
+                }
+            }
+        )
+    }
 
     val isAutoPlayEnabled by viewModel.isAutoPlayTtsEnabled.collectAsStateWithLifecycle()
     val isTtsReady by viewModel.isTtsReady.collectAsStateWithLifecycle()
@@ -2447,7 +2518,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
 
                     if (deck?.name?.contains("Master Vocabulary Pool") != true) {
                         IconButton(
-                            onClick = { viewModel.deleteCurrentDeck() },
+                            onClick = { showDeleteConfirmation = true },
                             modifier = Modifier.testTag("delete_deck_button")
                         ) {
                             Icon(
@@ -2457,7 +2528,21 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             )
                         }
                     } else {
-                        Spacer(modifier = Modifier.size(48.dp))
+                        IconButton(
+                            onClick = {
+                                Toast.makeText(
+                                    context,
+                                    "This is your protected Master Vocabulary Pool and can't be deleted.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "This deck is protected and can't be deleted",
+                                tint = Color(0xFFCBD5E1)
+                            )
+                        }
                     }
                 }
 
@@ -2589,13 +2674,29 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
 
                     if (deck?.name?.contains("Master Vocabulary Pool") != true) {
                         IconButton(
-                            onClick = { viewModel.deleteCurrentDeck() },
+                            onClick = { showDeleteConfirmation = true },
                             modifier = Modifier.testTag("delete_deck_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
                                 contentDescription = "Delete Deck",
                                 tint = Color(0xFFEF4444)
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            onClick = {
+                                Toast.makeText(
+                                    context,
+                                    "This is your protected Master Vocabulary Pool and can't be deleted.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "This deck is protected and can't be deleted",
+                                tint = Color(0xFFCBD5E1)
                             )
                         }
                     }
@@ -3540,7 +3641,49 @@ fun AiTutorBottomSheet(
     val activeCard = if (index < currentCards.size) currentCards[index] else null
 
     var textInput by remember { mutableStateOf("") }
+    var showClearChatConfirmation by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    if (showClearChatConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showClearChatConfirmation = false },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = Color.White,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.DeleteSweep,
+                    contentDescription = null,
+                    tint = Color(0xFFEF4444)
+                )
+            },
+            title = {
+                Text(
+                    text = "Clear tutor chat history?",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E293B)
+                )
+            },
+            text = {
+                Text(
+                    text = "This permanently deletes this conversation with the AI Tutor. This cannot be undone.",
+                    color = Color(0xFF64748B)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showClearChatConfirmation = false
+                    viewModel.clearChatHistory()
+                }) {
+                    Text("Clear", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearChatConfirmation = false }) {
+                    Text("Cancel", color = Color(0xFF64748B))
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -3590,7 +3733,7 @@ fun AiTutorBottomSheet(
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { viewModel.clearChatHistory() }) {
+                IconButton(onClick = { showClearChatConfirmation = true }) {
                     Icon(
                         imageVector = Icons.Default.DeleteSweep,
                         contentDescription = "Clear Chat",
