@@ -5,7 +5,7 @@ name: Release
 #                          version + changelog.
 #   merge that PR        -> release-please tags vX.Y.Z and cuts a GitHub Release;
 #                          the build job then attaches the signed APK to it.
-# The landing page links to releases/latest/download/avacore-latest.apk,
+# The landing page links to releases/latest/download/chistanland-latest.apk,
 # which always resolves to whatever the newest release is.
 
 on:
@@ -50,11 +50,6 @@ jobs:
         with:
           gradle-version: wrapper
 
-      - name: Provision Assets (Offline Models)
-        run: |
-          chmod +x download_assets.sh
-          ./download_assets.sh
-
       - name: Decode release keystore
         env:
           SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
@@ -72,9 +67,9 @@ jobs:
           ./gradlew assembleRelease
 
       - name: Stage APK with stable name
-        run: cp app/build/outputs/apk/release/app-release.apk avacore-latest.apk
+        run: cp app/build/outputs/apk/release/app-release.apk chistanland-latest.apk
 
       - name: Attach APK to the release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ needs.release-please.outputs.tag_name }}" avacore-latest.apk --clobber
+        run: gh release upload "${{ needs.release-please.outputs.tag_name }}" chistanland-latest.apk --clobber
