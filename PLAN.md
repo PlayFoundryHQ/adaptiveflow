@@ -565,6 +565,44 @@ Instrumented / Robolectric:
 **Docs**
 - ✅ `CLAUDE.md` (invariants), `docs/architecture/overview.md`, README rewritten.
 
+### 2026-09-09 — PR #3 `fix/copy-honesty` (merged, v0.1.2) + on-device verification
+
+**PR #3 — copy honesty (invariant #3):** rewrote UI strings that claimed
+features the app lacks — "Predictive Context / predicts source+target in
+real-time", "ZERO TEXT CONFIGURATION", Decks banner "local fallback
+assistance", YouTube "Gemini analyzes the transcript", Paste "generates
+pronunciation guides". De-vendored hard-coded "Gemini" in shared copy.
+Strings only, no logic change.
+
+**First real on-device run (OnePlus, adb, v0.1.2 release APK):**
+- ✅ In-place upgrade 0.1.1→0.1.2; launches clean; Master Pool + study goal
+  survived the upgrade.
+- ✅ Honest copy is live on Decks / Import / Guide.
+- ✅ Offline import: a `word: meaning` list → 6-card deck tagged "Auto",
+  **no API call, no fabrication** (invariant #2 holds).
+- ✅ Study loop: flip → reveal → LOW/MEDIUM/HIGH confidence grading.
+- ✅ SRS writes persist to Room — dashboard showed 2/6 learned · 4 due
+  after two HIGH grades, across a background/relaunch.
+- ✅ **AI tutor makes a real DeepSeek call** — Bearer auth, request,
+  response parse, and `AiException` normalisation all work end-to-end.
+  The account returned HTTP 402 "Insufficient Balance"; the app surfaced
+  it honestly rather than faking a reply. Needs DeepSeek credit or a
+  Gemini key to complete a generation.
+- 🐛 **U-x1**: in-session `1 / 6` counter + its blue progress bar are
+  frozen at 1/6; the green "N of 6 flipped" bar advances correctly.
+  Cosmetic. → Phase 3.
+- 🐛 **U-x2**: provider errors render as a bare grey chip ("Insufficient
+  Balance") with no guidance. Add "top up, or switch provider in
+  Settings". → Phase 3.
+- ◽ **A-x3**: background→relaunch drops the in-progress session back to
+  the Decks list (session state not in `SavedStateHandle`). Expected —
+  fixed by the Phase 2 nav/SavedStateHandle work.
+- ◽ **AI-x4 (review)**: "Instant Quick-Start Sample Decks" still insert
+  canned decks. User-initiated + labelled "Sample", so not an invariant-2
+  break, but decide whether they stay.
+- ◽ Not verified: rotation / process-death `rememberSaveable` — this
+  ColorOS device blocks the adb secure-settings needed; check by hand.
+
 ### 2026-09-09 — PR #2 `refactor/split-ui-and-save-state` (merged, v0.1.1)
 
 - **A1** — `MainActivity.kt` **5,258 -> 249 lines**. 7 new `ui/*.kt` files, one
