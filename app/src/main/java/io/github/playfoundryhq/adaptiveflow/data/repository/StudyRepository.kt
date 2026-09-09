@@ -5,8 +5,10 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.DeckWithCards
+import io.github.playfoundryhq.adaptiveflow.data.model.Progress
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 class StudyRepository(private val studyDao: StudyDao) {
     val allDecksFlow: Flow<List<Deck>> = studyDao.getAllDecksFlow()
@@ -48,4 +50,14 @@ class StudyRepository(private val studyDao: StudyDao) {
     suspend fun insertChatLog(chatLog: ChatLog): Long = studyDao.insertChatLog(chatLog)
 
     suspend fun clearChatLogsForDeck(deckId: Int) = studyDao.clearChatLogsForDeck(deckId)
+
+    // ---- Progress (gamification) ----
+
+    val progressFlow: Flow<Progress> = studyDao.progressFlow().map { it ?: Progress() }
+
+    suspend fun getProgress(): Progress = studyDao.getProgress() ?: Progress()
+
+    suspend fun updateProgress(transform: (Progress) -> Progress) {
+        studyDao.upsertProgress(transform(getProgress()))
+    }
 }

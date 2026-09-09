@@ -96,8 +96,9 @@ fun PathTab(
         }
     }
 
-    val totalXp = viewModel.getXp()
-    val streakDays = viewModel.getStreak()
+    val progress by viewModel.progress.collectAsStateWithLifecycle()
+    val totalXp = progress.xp
+    val streakDays = progress.streak
 
     // Filter matching decks for the active learning goal (matching target language)
     val matchingDecks = remember(decks, targetLanguage) {

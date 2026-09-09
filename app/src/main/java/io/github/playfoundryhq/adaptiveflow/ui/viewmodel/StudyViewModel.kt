@@ -25,6 +25,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.DeckWithCards
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
+import io.github.playfoundryhq.adaptiveflow.data.model.Progress
 import io.github.playfoundryhq.adaptiveflow.data.pdf.PdfTextExtractor
 import io.github.playfoundryhq.adaptiveflow.di.AppContainer
 import io.github.playfoundryhq.adaptiveflow.domain.DeckMerge
@@ -359,21 +360,26 @@ class StudyViewModel(
         throw Exception(lastError?.message ?: "Chunk $chunkLabel failed all attempts.")
     }
 
-    // ---- Gamification (interim SharedPreferences via SettingsStore) ----
+    // ---- Gamification (Room-backed since schema v2) ----
 
-    fun hasSeeded(): Boolean = settings.hasSeeded
-    fun getStreak(): Int = settings.streak
-    fun getXp(): Int = settings.xp
+    val progress: StateFlow<Progress> = repository.progressFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Progress())
 
-    private fun recordStudyActivity(isCorrect: Boolean) {
-        settings.xp += if (isCorrect) 15 else 5
+    private suspend fun recordStudyActivity(isCorrect: Boolean) {
         val today = dateString(0)
-        val last = settings.lastStudyDate
-        when {
-            last.isEmpty() -> { settings.streak = 1; settings.lastStudyDate = today }
-            last == today -> Unit
-            last == dateString(-1) -> { settings.streak += 1; settings.lastStudyDate = today }
-            else -> { settings.streak = 1; settings.lastStudyDate = today }
+        val yesterday = dateString(-1)
+        repository.updateProgress { p ->
+            val (streak, date) = when {
+                p.lastStudyDate.isEmpty() -> 1 to today
+                p.lastStudyDate == today -> p.streak to today
+                p.lastStudyDate == yesterday -> (p.streak + 1) to today
+                else -> 1 to today
+            }
+            p.copy(
+                xp = p.xp + if (isCorrect) 15 else 5,
+                streak = streak,
+                lastStudyDate = date,
+            )
         }
     }
 
@@ -388,15 +394,27 @@ class StudyViewModel(
         allDecks = repository.allDecksWithCardsFlow
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-        // Seed the shared Master Vocabulary Pool exactly once (guarded by a
-        // persisted flag + name check — no insert-inside-collect race).
         viewModelScope.launch {
-            if (!settings.hasSeeded) {
+            // One-shot: lift pre-v2 gamification counters out of SharedPreferences.
+            if (!settings.progressMigratedToRoom) {
+                repository.updateProgress {
+                    it.copy(
+                        xp = maxOf(it.xp, settings.xp),
+                        streak = maxOf(it.streak, settings.streak),
+                        lastStudyDate = it.lastStudyDate.ifEmpty { settings.lastStudyDate },
+                        seeded = it.seeded || settings.hasSeeded,
+                    )
+                }
+                settings.progressMigratedToRoom = true
+            }
+
+            // Seed the shared Master Vocabulary Pool exactly once.
+            if (!repository.getProgress().seeded) {
                 val exists = repository.allDecksFlowSnapshot().any { it.name == MASTER_POOL_NAME }
                 if (!exists) {
                     repository.insertDeck(Deck(name = MASTER_POOL_NAME, sourceLanguage = "Multiple", targetLanguage = "English"))
                 }
-                settings.hasSeeded = true
+                repository.updateProgress { it.copy(seeded = true) }
             }
         }
 

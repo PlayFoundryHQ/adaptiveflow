@@ -5,10 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import io.github.playfoundryhq.adaptiveflow.BuildConfig
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import io.github.playfoundryhq.adaptiveflow.data.dao.StudyDao
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
+import io.github.playfoundryhq.adaptiveflow.data.model.Progress
 
 /**
  * `exportSchema = true` — the schema JSON is committed under `app/schemas/`.
@@ -16,7 +19,11 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
  * destructive fallback is allowed in **debug only** so dev iteration is cheap
  * without ever wiping a real user's decks / SRS progress on an update.
  */
-@Database(entities = [Deck::class, Flashcard::class, ChatLog::class], version = 1, exportSchema = true)
+@Database(
+    entities = [Deck::class, Flashcard::class, ChatLog::class, Progress::class],
+    version = 2,
+    exportSchema = true,
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun studyDao(): StudyDao
 
@@ -24,8 +31,23 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        /** v1 → v2: gamification counters moved out of SharedPreferences. */
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `progress` (" +
+                        "`id` INTEGER NOT NULL, `xp` INTEGER NOT NULL, `streak` INTEGER NOT NULL, " +
+                        "`lastStudyDate` TEXT NOT NULL, `seeded` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
+                db.execSQL(
+                    "INSERT OR IGNORE INTO `progress` (`id`,`xp`,`streak`,`lastStudyDate`,`seeded`) " +
+                        "VALUES (0, 0, 0, '', 0)"
+                )
+            }
+        }
+
         // Register migrations here as the schema evolves.
-        private val MIGRATIONS = emptyArray<androidx.room.migration.Migration>()
+        private val MIGRATIONS = arrayOf<androidx.room.migration.Migration>(MIGRATION_1_2)
 
         fun getDatabase(context: Context): AppDatabase =
             INSTANCE ?: synchronized(this) {
