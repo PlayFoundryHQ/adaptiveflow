@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -87,11 +88,13 @@ enum class NavigationTab {
 fun MainScreen(viewModel: StudyViewModel) {
     var activeTab by rememberSaveable { mutableStateOf(NavigationTab.Decks) }
     val currentDeck by viewModel.currentDeck.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Transparent,
         contentWindowInsets = WindowInsets.safeDrawing,
+        snackbarHost = { io.github.playfoundryhq.adaptiveflow.ui.AppSnackbarHost(snackbarHostState) },
         bottomBar = {
             if (currentDeck == null) {
                 ZeroLanguageNavigationBar(

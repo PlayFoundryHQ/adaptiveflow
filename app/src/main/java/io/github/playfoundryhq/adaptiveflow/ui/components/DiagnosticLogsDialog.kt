@@ -78,7 +78,7 @@ fun DiagnosticLogsDialog(
                 .clip(RoundedCornerShape(24.dp))
                 .background(c.surface)
                 .border(1.dp, c.hairline, RoundedCornerShape(24.dp)),
-            color = c.textPrimary
+            color = c.surface
         ) {
             Column(
                 modifier = Modifier
@@ -292,7 +292,7 @@ fun DiagnosticLogsDialog(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color(0xFF0F172A)) // terminal style dark background
-                        .border(1.dp, c.textPrimary, RoundedCornerShape(16.dp))
+                        .border(1.dp, Color(0xFF334155), RoundedCornerShape(16.dp))
                         .padding(8.dp)
                 ) {
                     if (selectedTab == 0) {
@@ -317,10 +317,10 @@ fun DiagnosticLogsDialog(
                                             DiagnosticLogger.i("Diagnostics", "Interactive testing log entry!")
                                             DiagnosticLogger.e("Diagnostics", "Simulated Chunk Parsing Exception", RuntimeException("HTTP 429: Too many requests for chunk 2 of 4 (pages 5-8)"))
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = c.textPrimary),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B)),
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
-                                        Text("Simulate Test Log Entry", color = c.textFaint, fontSize = 11.sp)
+                                        Text("Simulate Test Log Entry", color = Color(0xFF94A3B8), fontSize = 11.sp)
                                     }
                                 }
                             }
@@ -415,7 +415,7 @@ fun InAppLogItemRow(entry: DiagnosticLogger.LogEntry) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(c.textPrimary.copy(alpha = 0.5f))
+            .background(Color(0xFF1E293B))
             .border(1.dp, Color(0xFF334155), RoundedCornerShape(8.dp))
             .clickable(enabled = hasStackTrace) { expanded = !expanded }
             .padding(8.dp)

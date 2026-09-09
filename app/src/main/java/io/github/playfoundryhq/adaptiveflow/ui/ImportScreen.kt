@@ -114,6 +114,41 @@ fun ImportTab(viewModel: StudyViewModel) {
     var isDeckDropdownExpanded by remember { mutableStateOf(false) }
     var selectedDensity by rememberSaveable { mutableStateOf("Balanced") } // "Focused", "Balanced", "Exhaustive"
 
+    (importState as? StudyViewModel.ImportState.MergePreview)?.let { preview ->
+        val p = preview.plan
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelMerge() },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = c.surface,
+            icon = { Icon(Icons.Default.Layers, contentDescription = null, tint = c.accent) },
+            title = { Text("Merge into \"${p.targetDeckName}\"?", fontWeight = FontWeight.Bold, color = c.textPrimary) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    MergeStatRow("${p.newCount}", "new cards added", c.success, c)
+                    MergeStatRow("${p.enrichCount}", "existing cards enriched with new context", c.accent, c)
+                    MergeStatRow("${p.skipCount}", "already present — skipped", c.textFaint, c)
+                    if (p.newCount == 0 && p.enrichCount == 0) {
+                        Text(
+                            "Nothing new to add — every parsed term is already in this pool.",
+                            color = c.textSecondary, fontSize = 12.sp
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.confirmMerge() },
+                    enabled = p.newCount > 0 || p.enrichCount > 0
+                ) { Text("Merge", color = c.accent, fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.cancelMerge() }) {
+                    Text("Cancel", color = c.textSecondary)
+                }
+            }
+        )
+    }
+
     LaunchedEffect(decks) {
         if (selectedMergeDeckId == null && decks.isNotEmpty()) {
             val masterPool = decks.find { it.deck.name.contains("Master Vocabulary Pool") }
@@ -197,7 +232,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             attachedFileUri = Uri.fromFile(tempFile)
                             DiagnosticLogger.i("MainActivity", "Successfully cached picked file to local sandbox: ${tempFile.absolutePath} (${tempFile.length()} bytes)")
                             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                                Toast.makeText(context, "Attached file $name successfully!", Toast.LENGTH_LONG).show()
+                                AppSnackbar.show("Attached file $name successfully!")
                             }
                         } else {
                             throw Exception("Cached file is empty or missing")
@@ -205,13 +240,13 @@ fun ImportTab(viewModel: StudyViewModel) {
                     } catch (e: Exception) {
                         DiagnosticLogger.e("MainActivity", "Failed to cache selected file", e)
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                            Toast.makeText(context, "Failed to cache file: ${e.message}", Toast.LENGTH_LONG).show()
+                            AppSnackbar.show("Failed to cache file: ${e.message}")
                         }
                     }
                 }
             } catch (e: Exception) {
                 DiagnosticLogger.e("MainActivity", "Error querying file info", e)
-                Toast.makeText(context, "Error querying file info: ${e.message}", Toast.LENGTH_LONG).show()
+                AppSnackbar.show("Error querying file info: ${e.message}")
             }
         }
     }
@@ -568,7 +603,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 Button(
                                     onClick = {
                                         clipboardManager.setText(AnnotatedString(promptTemplate))
-                                        Toast.makeText(context, "Copied Prompt to Clipboard!", Toast.LENGTH_SHORT).show()
+                                        AppSnackbar.show("Copied Prompt to Clipboard!")
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E22CE)),
@@ -1254,12 +1289,24 @@ fun ImportTab(viewModel: StudyViewModel) {
                         tint = c.success,
                         modifier = Modifier.size(22.dp)
                     )
-                    Text(
-                        text = "Deck saved: ${currentImportState.deckName}",
-                        color = c.success,
-                        fontSize = 13.sp,
-                        modifier = Modifier.weight(1f)
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Deck saved: ${currentImportState.deckName}",
+                            color = c.success,
+                            fontSize = 13.sp
+                        )
+                        if (currentImportState.undoable) {
+                            Text(
+                                text = "Undo this merge",
+                                color = c.accent,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .padding(top = 4.dp)
+                                    .clickable { viewModel.undoLastImport() }
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = { viewModel.resetImportState() },
                         modifier = Modifier.size(32.dp)
@@ -1275,120 +1322,20 @@ fun ImportTab(viewModel: StudyViewModel) {
             }
         }
 
-        item {
-            // Instant Quick-Start Sample Seeds
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "Instant Quick-Start Sample Decks",
-                    color = c.accent,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 0.5.sp
-                )
-
-                QuickSeedDeckButton(
-                    title = "🇫🇷 French Culinary Terms",
-                    desc = "Terms like Le pain, Le beurre, Le fromage",
-                    enabled = importState !is StudyViewModel.ImportState.Loading,
-                    onClick = {
-                        viewModel.importDeckFromRawText(
-                            "Le pain: The bread\nLe beurre: The butter\nLe fromage: The cheese\nLe vin: The wine\nLe café: The coffee"
-                        )
-                    }
-                )
-
-                QuickSeedDeckButton(
-                    title = "🇯🇵 Japanese Essential Travel",
-                    desc = "Basic traveling phrases like Sumimasen, Arigatou",
-                    enabled = importState !is StudyViewModel.ImportState.Loading,
-                    onClick = {
-                        viewModel.importDeckFromRawText(
-                            "Arigatou: Thank you (informal)\nSumimasen: Excuse me / Sorry\nKonnichiwa: Hello / Good afternoon\nSayounara: Goodbye\nKore wa ikura desu ka: How much is this?"
-                        )
-                    }
-                )
-            }
-        }
     }
 }
+
 
 
 @Composable
-fun QuickSeedDeckButton(
-    title: String,
-    desc: String,
-    enabled: Boolean = true,
-    onClick: () -> Unit
+private fun MergeStatRow(
+    value: String,
+    label: String,
+    valueColor: androidx.compose.ui.graphics.Color,
+    c: io.github.playfoundryhq.adaptiveflow.ui.theme.AppColors,
 ) {
-    val c = AppTheme.colors
-    val emoji = when {
-        title.contains("French") -> "🇫🇷"
-        title.contains("Japanese") -> "🇯🇵"
-        else -> "⚡"
-    }
-
-    val style = when {
-        title.contains("French") -> getStyleForLanguage("French", "")
-        title.contains("Japanese") -> getStyleForLanguage("Japanese", "")
-        else -> getStyleForLanguage("", "")
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(if (enabled) 1f else 0.5f)
-            .clip(RoundedCornerShape(16.dp))
-            .background(c.surface)
-            .border(1.dp, c.hairline, RoundedCornerShape(16.dp))
-            .clickable(enabled = enabled) { onClick() }
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(style.iconBgColor),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(emoji, fontSize = 20.sp)
-        }
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title.replace("🇫🇷 ", "").replace("🇯🇵 ", ""),
-                color = c.textPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = desc,
-                color = c.textSecondary,
-                fontSize = 11.sp
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(c.accentMuted),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Bolt,
-                contentDescription = "Quick Seed",
-                tint = c.accent,
-                modifier = Modifier.size(16.dp)
-            )
-        }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(value, color = valueColor, fontWeight = FontWeight.Black, fontSize = 15.sp)
+        Text(label, color = c.textSecondary, fontSize = 12.sp)
     }
 }
-

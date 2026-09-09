@@ -2,7 +2,6 @@ package io.github.playfoundryhq.adaptiveflow.ui
 
 import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -107,7 +106,7 @@ fun ApiKeySettingsDialog(
                 onClick = {
                     viewModel.saveApiKey(selectedProvider, inputKey)
                     viewModel.setAiProvider(selectedProvider)
-                    Toast.makeText(context, "Saved. Using ${selectedProvider.displayName}.", Toast.LENGTH_SHORT).show()
+                    AppSnackbar.show("Saved. Using ${selectedProvider.displayName}.")
                     onDismiss()
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = c.accent),
@@ -128,6 +127,10 @@ fun ApiKeySettingsDialog(
                 Text(
                     "AdaptiveFlow uses your own API key — nothing is bundled or shared. Pick a provider and paste its key. Without a key, AI import and the tutor are off, but you can still import a plain \"word: meaning\" list offline.",
                     fontSize = 12.sp, color = c.textSecondary, lineHeight = 16.sp
+                )
+                Text(
+                    "When a key is set, the text you import and your tutor messages are sent to that provider (Google or DeepSeek) for processing, under their terms. Your key is stored encrypted on this device only.",
+                    fontSize = 11.sp, color = c.textFaint, lineHeight = 15.sp
                 )
 
                 // Provider toggle
@@ -194,7 +197,7 @@ fun ApiKeySettingsDialog(
                         onClick = {
                             viewModel.saveApiKey(selectedProvider, "")
                             inputKey = ""
-                            Toast.makeText(context, "${selectedProvider.displayName} key cleared.", Toast.LENGTH_SHORT).show()
+                            AppSnackbar.show("${selectedProvider.displayName} key cleared.")
                         },
                         colors = ButtonDefaults.textButtonColors(contentColor = c.danger),
                         modifier = Modifier.align(Alignment.End)
@@ -217,7 +220,7 @@ fun ApiKeySettingsDialog(
                         modifier = Modifier.clickable {
                             runCatching {
                                 context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(keyUrl)))
-                            }.onFailure { Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show() }
+                            }.onFailure { AppSnackbar.show("Could not open browser") }
                         }
                     )
                 }
@@ -251,10 +254,10 @@ fun LearningGoalSettingsDialog(
             Button(
                 onClick = {
                     if (nativeInput.isBlank() || targetInput.isBlank()) {
-                        Toast.makeText(context, "Languages cannot be empty!", Toast.LENGTH_SHORT).show()
+                        AppSnackbar.show("Languages cannot be empty!")
                     } else {
                         viewModel.updateLearningGoal(nativeInput, targetInput)
-                        Toast.makeText(context, "Learning goal updated to $targetInput!", Toast.LENGTH_SHORT).show()
+                        AppSnackbar.show("Learning goal updated to $targetInput!")
                         onDismiss()
                     }
                 },
