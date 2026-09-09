@@ -69,6 +69,13 @@ android {
     }
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
+
+  lint {
+    // CI's `verify` job already runs `lintDebug` on every PR/push. Re-running
+    // the whole analysis as `lintVitalRelease` during `assembleRelease` just
+    // slows the release job down for no extra coverage.
+    checkReleaseBuilds = false
+  }
 }
 
 ksp {
