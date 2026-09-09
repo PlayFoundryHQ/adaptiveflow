@@ -98,6 +98,39 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
     var showContextDrawer by rememberSaveable { mutableStateOf(false) }
     var isSessionStarted by remember(deck?.id) { mutableStateOf(false) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var showExportSheet by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    // Deferred payload: the picker is launched, then we write once the user picks a location.
+    var pendingExport by remember { mutableStateOf<Pair<StudyViewModel.ExportFormat, String>?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/octet-stream")
+    ) { uri ->
+        val payload = pendingExport
+        pendingExport = null
+        if (uri != null && payload != null) {
+            runCatching {
+                context.contentResolver.openOutputStream(uri)?.use { it.write(payload.second.toByteArray()) }
+            }.onSuccess {
+                Toast.makeText(context, "Deck exported", Toast.LENGTH_SHORT).show()
+            }.onFailure {
+                Toast.makeText(context, "Export failed: ${it.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    fun startExport(format: StudyViewModel.ExportFormat) {
+        showExportSheet = false
+        scope.launch {
+            val content = viewModel.buildDeckExport(format)
+            if (content == null) {
+                Toast.makeText(context, "Nothing to export — this deck has no cards yet.", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            pendingExport = format to content
+            exportLauncher.launch("${viewModel.exportFileName()}.${format.extension}")
+        }
+    }
 
     // Without this, system back/gesture falls through to the Activity and exits the app entirely
     // instead of returning to the deck library. Close any open overlay first, then fall back to
@@ -146,6 +179,37 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
                     Text("Cancel", color = c.textSecondary)
+                }
+            }
+        )
+    }
+
+    if (showExportSheet) {
+        AlertDialog(
+            onDismissRequest = { showExportSheet = false },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = c.surface,
+            icon = { Icon(Icons.Default.FileDownload, contentDescription = null, tint = c.accent) },
+            title = { Text("Export \"${deck?.name ?: "deck"}\"", fontWeight = FontWeight.Bold, color = c.textPrimary) },
+            text = {
+                Text(
+                    "Save this deck to a file. JSON re-imports into the Paste tab with no AI call; CSV opens in Anki and spreadsheets.",
+                    color = c.textSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { startExport(StudyViewModel.ExportFormat.JSON) }) {
+                    Text("JSON", color = c.accent, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = { startExport(StudyViewModel.ExportFormat.CSV) }) {
+                        Text("CSV", color = c.accent, fontWeight = FontWeight.Bold)
+                    }
+                    TextButton(onClick = { showExportSheet = false }) {
+                        Text("Cancel", color = c.textSecondary)
+                    }
                 }
             }
         )
@@ -337,6 +401,17 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
+
+                    IconButton(
+                        onClick = { showExportSheet = true },
+                        modifier = Modifier.testTag("export_deck_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FileDownload,
+                            contentDescription = "Export Deck",
+                            tint = c.textSecondary
+                        )
+                    }
 
                     if (deck?.name?.contains("Master Vocabulary Pool") != true) {
                         IconButton(

@@ -16,6 +16,7 @@ import io.github.playfoundryhq.adaptiveflow.data.ai.AiException
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiProvider
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiProviderId
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiTurn
+import io.github.playfoundryhq.adaptiveflow.data.backup.DeckExporter
 import io.github.playfoundryhq.adaptiveflow.data.database.AppDatabase
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
@@ -601,6 +602,28 @@ class StudyViewModel(
         }
     }
 
+    // ---- export ----
+
+    enum class ExportFormat(val extension: String, val mime: String) {
+        JSON("json", "application/json"),
+        CSV("csv", "text/csv"),
+    }
+
+    /** Suggested file name for the active deck's export, without extension. */
+    fun exportFileName(): String =
+        DeckExporter.safeFileName(_currentDeck.value?.name ?: "deck")
+
+    /** Serialises the active deck. Returns null if no deck is open or it's empty. */
+    suspend fun buildDeckExport(format: ExportFormat): String? {
+        val deck = _currentDeck.value ?: return null
+        val cards = repository.getFlashcardsForDeck(deck.id)
+        if (cards.isEmpty()) return null
+        return when (format) {
+            ExportFormat.JSON -> DeckExporter.toJson(deck, cards)
+            ExportFormat.CSV -> DeckExporter.toCsv(cards)
+        }
+    }
+
     // ---- save / merge ----
 
     private suspend fun saveOrMergeCards(
@@ -727,13 +750,25 @@ class StudyViewModel(
             try {
                 val input = rawText.trim()
 
-                // 1. User pasted a ready-made JSON deck.
-                if (input.isNotEmpty() && fileUri == null) {
-                    val cleaned = input.removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
+                // A .json / .txt file dropped in the picker that is itself an
+                // exported deck: read it here so it re-imports offline like paste.
+                val fileText: String? = if (fileUri != null) {
+                    val ctx = getApplication<Application>()
+                    val mime = ctx.contentResolver.getType(fileUri).orEmpty()
+                    val looksBinary = mime.contains("pdf", true) || fileUri.toString().endsWith(".pdf", true)
+                    if (looksBinary) null else runCatching {
+                        ctx.contentResolver.openInputStream(fileUri)?.bufferedReader()?.use { it.readText() }?.take(500_000)
+                    }.getOrNull()
+                } else null
+
+                // 1. A ready-made JSON deck — pasted, or a loaded export file.
+                val jsonSource = (fileText ?: input).takeIf { it.isNotBlank() }
+                if (jsonSource != null) {
+                    val cleaned = jsonSource.removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
                     runCatching { moshi.adapter(ParsedDeck::class.java).fromJson(cleaned) }
                         .getOrNull()?.takeIf { it.cards.isNotEmpty() }?.let { deck ->
-                            setImportMessage("Pasted JSON deck detected — importing…")
-                            val name = saveOrMergeCards(mergeDeckId, deck.deckName.ifBlank { "📋 Pasted deck" }, deck.sourceLanguage, deck.targetLanguage, deck.cards)
+                            setImportMessage("JSON deck detected — importing offline…")
+                            val name = saveOrMergeCards(mergeDeckId, deck.deckName.ifBlank { "📋 Imported deck" }, deck.sourceLanguage, deck.targetLanguage, deck.cards)
                             _importState.value = ImportState.Success(name)
                             return@launch
                         }
@@ -783,7 +818,7 @@ class StudyViewModel(
                                 )
                             }
                         } else {
-                            val text = tempFile.inputStream().bufferedReader().use { it.readText() }.take(150_000)
+                            val text = (fileText ?: tempFile.inputStream().bufferedReader().use { it.readText() }).take(150_000)
                             if (text.isBlank()) throw Exception("The selected text file is empty.")
                             attachedText = if (attachedText.isBlank()) text else "$attachedText\n\n--- Attached file ---\n$text"
                         }
