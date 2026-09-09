@@ -375,9 +375,9 @@ fun ImportTab(viewModel: StudyViewModel) {
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = when (selectedImportMode) {
-                                "YouTube" -> "Paste a video link (lessons, talk, song). Gemini analyzes the topic or transcript semantically to build a specialized study session automatically."
+                                "YouTube" -> "Paste a video link plus a Focus/Topic hint describing what it covers. AdaptiveFlow can't read the video itself, so the AI builds a deck from the topic you provide. Needs an API key."
                                 "PDF" -> "To study books or PDFs, copy-paste their text chapters or public links. You can also pick a local plain text file directly!"
-                                else -> "Paste CSV pairs (Front, Back), vocabulary bullet lists, or raw sentences. The AI extracts translation pairs and generates pronunciation guides."
+                                else -> "Paste CSV pairs (Front, Back), vocabulary bullet lists, or raw sentences. With an API key the AI extracts translation pairs and adds pronunciation and usage notes where it can; without one, plain \"word: meaning\" lines still import offline."
                             },
                             color = Color(0xFF64748B),
                             fontSize = 11.sp,

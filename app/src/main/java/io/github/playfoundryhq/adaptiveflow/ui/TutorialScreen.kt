@@ -151,7 +151,7 @@ fun TutorialTab() {
                             )
                     )
                     Text(
-                        text = "ZERO TEXT CONFIGURATION",
+                        text = "ONE GOAL · EVERY DECK",
                         color = Color(0xFF38BDF8),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
@@ -172,20 +172,20 @@ fun TutorialTab() {
             ) {
                 TutorialPillarItem(
                     icon = Icons.Default.AllInclusive,
-                    title = "Universal Language Flow",
-                    desc = "Drag, paste, or select words in any custom format. AI parses the deck structure, detects flashcard pairs, and designs the session instantly."
+                    title = "Paste It, Study It",
+                    desc = "Paste text or a word list, or load a PDF / TXT / CSV. With your own API key, the AI turns it into flashcard pairs. No key? A plain \"word: meaning\" list still imports offline."
                 )
 
                 TutorialPillarItem(
                     icon = Icons.Default.CenterFocusStrong,
-                    title = "Predictive Context",
-                    desc = "No tedious language configuration screens. The engine automatically predicts both source and target language in real-time."
+                    title = "Set Your Goal Once",
+                    desc = "Choose your native and target language on the Quest tab. Every new deck, quiz, and tutor reply is tuned to that goal."
                 )
 
                 TutorialPillarItem(
                     icon = Icons.Default.SupportAgent,
-                    title = "Empathetic AI Tutor",
-                    desc = "Struggling on a card? The tutor adjusts its explanation style dynamically—giving comforting advice and simpler analogies in your native language."
+                    title = "AI Tutor",
+                    desc = "Stuck on a card? Open the tutor chat for pronunciation tips, usage examples, and simpler explanations. Needs an API key."
                 )
             }
         }

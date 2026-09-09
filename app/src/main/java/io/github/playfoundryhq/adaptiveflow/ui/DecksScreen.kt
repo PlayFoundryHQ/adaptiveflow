@@ -354,7 +354,7 @@ fun DecksTab(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "AdaptiveFlow auto-tunes local fallback assistance and cloud generators specifically to $targetLanguage. Tap any deck below to study!",
+                                text = "New decks, quizzes, and tutor replies are tuned to $targetLanguage. Tap any deck below to study!",
                                 color = Color.White.copy(alpha = 0.8f),
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
