@@ -26,6 +26,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +38,7 @@ fun DiagnosticLogsDialog(
     viewModel: StudyViewModel,
     onDismiss: () -> Unit
 ) {
+    val c = AppTheme.colors
     var selectedTab by remember { mutableStateOf(0) } // 0 = In-App Logs, 1 = ADB System Logcat
     var searchQuery by remember { mutableStateOf("") }
     
@@ -74,9 +76,9 @@ fun DiagnosticLogsDialog(
                 .fillMaxWidth(0.95f)
                 .fillMaxHeight(0.85f)
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color.White)
-                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(24.dp)),
-            color = Color.White
+                .background(c.surface)
+                .border(1.dp, c.hairline, RoundedCornerShape(24.dp)),
+            color = c.textPrimary
         ) {
             Column(
                 modifier = Modifier
@@ -94,13 +96,13 @@ fun DiagnosticLogsDialog(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFFEF2F2)),
+                                .background(c.dangerMuted),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.BugReport,
                                 contentDescription = "Diagnostics",
-                                tint = Color(0xFFEF4444),
+                                tint = c.danger,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -110,12 +112,12 @@ fun DiagnosticLogsDialog(
                                 text = "Diagnostic Console",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E293B)
+                                color = c.textPrimary
                             )
                             Text(
                                 text = "Trace chunking & background process errors",
                                 fontSize = 11.sp,
-                                color = Color(0xFF64748B)
+                                color = c.textSecondary
                             )
                         }
                     }
@@ -124,7 +126,7 @@ fun DiagnosticLogsDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = Color(0xFF64748B)
+                            tint = c.textSecondary
                         )
                     }
                 }
@@ -136,7 +138,7 @@ fun DiagnosticLogsDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF1F5F9))
+                        .background(c.surfaceMuted)
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -148,7 +150,7 @@ fun DiagnosticLogsDialog(
                                 .weight(1f)
                                 .height(36.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) Color.White else Color.Transparent)
+                                .background(if (isSelected) c.surface else Color.Transparent)
                                 .clickable { selectedTab = idx }
                                 .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
@@ -157,7 +159,7 @@ fun DiagnosticLogsDialog(
                                 text = title,
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color(0xFF1E293B) else Color(0xFF64748B)
+                                color = if (isSelected) c.textPrimary else c.textSecondary
                             )
                         }
                     }
@@ -183,7 +185,7 @@ fun DiagnosticLogsDialog(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Search",
                                 modifier = Modifier.size(16.dp),
-                                tint = Color(0xFF94A3B8)
+                                tint = c.textFaint
                             )
                         },
                         trailingIcon = if (searchQuery.isNotEmpty()) {
@@ -193,7 +195,7 @@ fun DiagnosticLogsDialog(
                                         imageVector = Icons.Default.Close,
                                         contentDescription = "Clear search",
                                         modifier = Modifier.size(16.dp),
-                                        tint = Color(0xFF64748B)
+                                        tint = c.textSecondary
                                     )
                                 }
                             }
@@ -201,10 +203,10 @@ fun DiagnosticLogsDialog(
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFCBD5E1),
-                            unfocusedBorderColor = Color(0xFFE2E8F0),
-                            focusedContainerColor = Color(0xFFF8FAFC),
-                            unfocusedContainerColor = Color(0xFFF8FAFC)
+                            focusedBorderColor = c.textFaint,
+                            unfocusedBorderColor = c.hairline,
+                            focusedContainerColor = c.surfaceMuted,
+                            unfocusedContainerColor = c.surfaceMuted
                         ),
                         textStyle = LocalTextStyle.current.copy(fontSize = 12.sp)
                     )
@@ -221,12 +223,12 @@ fun DiagnosticLogsDialog(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF1F5F9))
+                            .background(c.surfaceMuted)
                     ) {
                         Icon(
                             imageVector = Icons.Default.DeleteSweep,
                             contentDescription = "Clear logs",
-                            tint = Color(0xFFEF4444),
+                            tint = c.danger,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -244,12 +246,12 @@ fun DiagnosticLogsDialog(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF1F5F9))
+                            .background(c.surfaceMuted)
                     ) {
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
                             contentDescription = "Copy logs",
-                            tint = Color(0xFF0F172A),
+                            tint = c.textPrimary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -261,19 +263,19 @@ fun DiagnosticLogsDialog(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFEFF6FF))
+                                .background(c.accentMuted)
                         ) {
                             if (isRefreshingSystemLogs) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp,
-                                    color = Color(0xFF3B82F6)
+                                    color = c.accent
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.Refresh,
                                     contentDescription = "Refresh",
-                                    tint = Color(0xFF3B82F6),
+                                    tint = c.accent,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -290,7 +292,7 @@ fun DiagnosticLogsDialog(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color(0xFF0F172A)) // terminal style dark background
-                        .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(16.dp))
+                        .border(1.dp, c.textPrimary, RoundedCornerShape(16.dp))
                         .padding(8.dp)
                 ) {
                     if (selectedTab == 0) {
@@ -308,17 +310,17 @@ fun DiagnosticLogsDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("No matching logs captured.", color = Color(0xFF64748B), fontSize = 12.sp)
+                                    Text("No matching logs captured.", color = c.textSecondary, fontSize = 12.sp)
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Button(
                                         onClick = {
                                             DiagnosticLogger.i("Diagnostics", "Interactive testing log entry!")
                                             DiagnosticLogger.e("Diagnostics", "Simulated Chunk Parsing Exception", RuntimeException("HTTP 429: Too many requests for chunk 2 of 4 (pages 5-8)"))
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B)),
+                                        colors = ButtonDefaults.buttonColors(containerColor = c.textPrimary),
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
-                                        Text("Simulate Test Log Entry", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                                        Text("Simulate Test Log Entry", color = c.textFaint, fontSize = 11.sp)
                                     }
                                 }
                             }
@@ -342,14 +344,14 @@ fun DiagnosticLogsDialog(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Fetching ADB system logcat...", color = Color(0xFF64748B), fontSize = 12.sp)
+                                Text("Fetching ADB system logcat...", color = c.textSecondary, fontSize = 12.sp)
                             }
                         } else if (filteredSystem.isEmpty()) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("No matching system logcat logs found.", color = Color(0xFF64748B), fontSize = 12.sp)
+                                Text("No matching system logcat logs found.", color = c.textSecondary, fontSize = 12.sp)
                             }
                         } else {
                             LazyColumn(
@@ -385,7 +387,7 @@ fun DiagnosticLogsDialog(
                     
                     Text(
                         text = "V1.2 Debug Console",
-                        color = Color(0xFF94A3B8),
+                        color = c.textFaint,
                         fontSize = 10.sp
                     )
                 }
@@ -396,6 +398,7 @@ fun DiagnosticLogsDialog(
 
 @Composable
 fun InAppLogItemRow(entry: DiagnosticLogger.LogEntry) {
+    val c = AppTheme.colors
     var expanded by remember { mutableStateOf(false) }
     
     val color = when (entry.level.uppercase()) {
@@ -403,7 +406,7 @@ fun InAppLogItemRow(entry: DiagnosticLogger.LogEntry) {
         "W" -> Color(0xFFFBBF24) // gold yellow
         "I" -> Color(0xFF60A5FA) // light blue
         "D" -> Color(0xFF34D399) // green
-        else -> Color(0xFF94A3B8) // slate gray
+        else -> c.textFaint // slate gray
     }
 
     val hasStackTrace = !entry.stackTrace.isNullOrEmpty()
@@ -412,7 +415,7 @@ fun InAppLogItemRow(entry: DiagnosticLogger.LogEntry) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF1E293B).copy(alpha = 0.5f))
+            .background(c.textPrimary.copy(alpha = 0.5f))
             .border(1.dp, Color(0xFF334155), RoundedCornerShape(8.dp))
             .clickable(enabled = hasStackTrace) { expanded = !expanded }
             .padding(8.dp)
@@ -431,7 +434,7 @@ fun InAppLogItemRow(entry: DiagnosticLogger.LogEntry) {
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = entry.timestamp,
-                color = Color(0xFF64748B),
+                color = c.textSecondary,
                 fontSize = 10.sp,
                 fontFamily = FontFamily.Monospace
             )
@@ -454,7 +457,7 @@ fun InAppLogItemRow(entry: DiagnosticLogger.LogEntry) {
         ) {
             Text(
                 text = entry.message,
-                color = Color(0xFFF1F5F9),
+                color = c.surfaceMuted,
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace,
                 modifier = Modifier.weight(1f)
@@ -464,7 +467,7 @@ fun InAppLogItemRow(entry: DiagnosticLogger.LogEntry) {
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = if (expanded) "Collapse" else "Expand stacktrace",
-                    tint = Color(0xFF94A3B8),
+                    tint = c.textFaint,
                     modifier = Modifier.size(16.dp)
                 )
             }

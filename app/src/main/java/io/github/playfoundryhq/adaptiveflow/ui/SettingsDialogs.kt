@@ -71,6 +71,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import java.io.File
 import java.io.FileOutputStream
@@ -82,6 +83,7 @@ fun ApiKeySettingsDialog(
     viewModel: StudyViewModel,
     onDismiss: () -> Unit
 ) {
+    val c = AppTheme.colors
     val activeProvider by viewModel.aiProviderId.collectAsStateWithLifecycle()
     var selectedProvider by remember { mutableStateOf(activeProvider) }
     var inputKey by remember(selectedProvider) { mutableStateOf(viewModel.apiKeyFor(selectedProvider)) }
@@ -108,24 +110,24 @@ fun ApiKeySettingsDialog(
                     Toast.makeText(context, "Saved. Using ${selectedProvider.displayName}.", Toast.LENGTH_SHORT).show()
                     onDismiss()
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0054D1)),
+                colors = ButtonDefaults.buttonColors(containerColor = c.accent),
                 shape = RoundedCornerShape(10.dp)
             ) { Text("Save & use") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel", color = Color(0xFF64748B)) }
+            TextButton(onClick = onDismiss) { Text("Cancel", color = c.textSecondary) }
         },
         title = {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.VpnKey, null, tint = Color(0xFF0054D1), modifier = Modifier.size(28.dp))
-                Text("AI provider & key", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
+                Icon(Icons.Default.VpnKey, null, tint = c.accent, modifier = Modifier.size(28.dp))
+                Text("AI provider & key", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
             }
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "AdaptiveFlow uses your own API key — nothing is bundled or shared. Pick a provider and paste its key. Without a key, AI import and the tutor are off, but you can still import a plain \"word: meaning\" list offline.",
-                    fontSize = 12.sp, color = Color(0xFF64748B), lineHeight = 16.sp
+                    fontSize = 12.sp, color = c.textSecondary, lineHeight = 16.sp
                 )
 
                 // Provider toggle
@@ -137,30 +139,30 @@ fun ApiKeySettingsDialog(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = if (sel) Color(0xFFEFF6FF) else Color.Transparent,
-                                contentColor = if (sel) Color(0xFF0054D1) else Color(0xFF64748B)
+                                containerColor = if (sel) c.accentMuted else Color.Transparent,
+                                contentColor = if (sel) c.accent else c.textSecondary
                             ),
-                            border = BorderStroke(1.dp, if (sel) Color(0xFF0054D1) else Color(0xFFE2E8F0))
+                            border = BorderStroke(1.dp, if (sel) c.accent else c.hairline)
                         ) { Text(p.displayName, fontSize = 12.sp, fontWeight = if (sel) FontWeight.Bold else FontWeight.Normal) }
                     }
                 }
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = if (hasActiveKey) Color(0xFFF0FDF4) else Color(0xFFFFF7ED)),
+                    colors = CardDefaults.cardColors(containerColor = if (hasActiveKey) c.successMuted else c.warningMuted),
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, if (hasActiveKey) Color(0xFFBBF7D0) else Color(0xFFFED7AA))
+                    border = BorderStroke(1.dp, if (hasActiveKey) c.successMuted else c.warningMuted)
                 ) {
                     Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             if (hasActiveKey) Icons.Default.CheckCircle else Icons.Default.Info, null,
-                            tint = if (hasActiveKey) Color(0xFF16A34A) else Color(0xFFEA580C), modifier = Modifier.size(20.dp)
+                            tint = if (hasActiveKey) c.success else c.warning, modifier = Modifier.size(20.dp)
                         )
                         Text(
                             if (hasActiveKey) "AI ready — using ${activeProvider.displayName}."
                             else "No key set. AI import & tutor are off; offline list import still works.",
                             fontSize = 12.sp, fontWeight = FontWeight.Medium,
-                            color = if (hasActiveKey) Color(0xFF15803D) else Color(0xFF9A3412)
+                            color = if (hasActiveKey) c.success else c.warning
                         )
                     }
                 }
@@ -178,12 +180,12 @@ fun ApiKeySettingsDialog(
                         IconButton(onClick = { isKeyVisible = !isKeyVisible }) {
                             Icon(
                                 if (isKeyVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = if (isKeyVisible) "Hide" else "Show", tint = Color(0xFF64748B)
+                                contentDescription = if (isKeyVisible) "Hide" else "Show", tint = c.textSecondary
                             )
                         }
                     },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF0054D1), unfocusedBorderColor = Color(0xFFE2E8F0)
+                        focusedBorderColor = c.accent, unfocusedBorderColor = c.hairline
                     )
                 )
 
@@ -194,7 +196,7 @@ fun ApiKeySettingsDialog(
                             inputKey = ""
                             Toast.makeText(context, "${selectedProvider.displayName} key cleared.", Toast.LENGTH_SHORT).show()
                         },
-                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFEF4444)),
+                        colors = ButtonDefaults.textButtonColors(contentColor = c.danger),
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -208,10 +210,10 @@ fun ApiKeySettingsDialog(
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Need a key?", fontSize = 11.sp, color = Color(0xFF64748B))
+                    Text("Need a key?", fontSize = 11.sp, color = c.textSecondary)
                     Text(
                         "Get one from ${selectedProvider.displayName}",
-                        fontSize = 11.sp, color = Color(0xFF0054D1), fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp, color = c.accent, fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             runCatching {
                                 context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(keyUrl)))
@@ -221,7 +223,7 @@ fun ApiKeySettingsDialog(
                 }
             }
         },
-        containerColor = Color.White,
+        containerColor = c.surface,
         shape = RoundedCornerShape(20.dp)
     )
 }
@@ -232,6 +234,7 @@ fun LearningGoalSettingsDialog(
     viewModel: StudyViewModel,
     onDismiss: () -> Unit
 ) {
+    val c = AppTheme.colors
     val nativeLanguage by viewModel.nativeLanguage.collectAsStateWithLifecycle()
     val targetLanguage by viewModel.targetLanguage.collectAsStateWithLifecycle()
     
@@ -255,7 +258,7 @@ fun LearningGoalSettingsDialog(
                         onDismiss()
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0054D1)),
+                colors = ButtonDefaults.buttonColors(containerColor = c.accent),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text("Apply Goal")
@@ -263,7 +266,7 @@ fun LearningGoalSettingsDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color(0xFF64748B))
+                Text("Cancel", color = c.textSecondary)
             }
         },
         title = {
@@ -274,14 +277,14 @@ fun LearningGoalSettingsDialog(
                 Icon(
                     imageVector = Icons.Default.Flag,
                     contentDescription = null,
-                    tint = Color(0xFFD97706),
+                    tint = c.warning,
                     modifier = Modifier.size(28.dp)
                 )
                 Text(
                     text = "My Study Goal Profile",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B)
+                    color = c.textPrimary
                 )
             }
         },
@@ -291,13 +294,13 @@ fun LearningGoalSettingsDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Setting your explicit learning goal shapes all AI card generation, localized local chatbot assistance, and suggestions in AdaptiveFlow.",
+                    text = "Your learning goal shapes AI card generation, the tutor's replies, and deck suggestions.",
                     fontSize = 12.sp,
-                    color = Color(0xFF64748B),
+                    color = c.textSecondary,
                     lineHeight = 16.sp
                 )
                 
-                Text("Native Language (Source)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
+                Text("Native Language (Source)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
                 OutlinedTextField(
                     value = nativeInput,
                     onValueChange = { nativeInput = it },
@@ -306,8 +309,8 @@ fun LearningGoalSettingsDialog(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF0054D1),
-                        unfocusedBorderColor = Color(0xFFCBD5E1)
+                        focusedBorderColor = c.accent,
+                        unfocusedBorderColor = c.textFaint
                     )
                 )
                 
@@ -321,19 +324,19 @@ fun LearningGoalSettingsDialog(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) Color(0xFFEFF6FF) else Color(0xFFF1F5F9))
-                                .border(1.dp, if (isSelected) Color(0xFF3B82F6) else Color.Transparent, RoundedCornerShape(8.dp))
+                                .background(if (isSelected) c.accentMuted else c.surfaceMuted)
+                                .border(1.dp, if (isSelected) c.accent else Color.Transparent, RoundedCornerShape(8.dp))
                                 .clickable { nativeInput = lang }
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
-                            Text(text = lang, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) Color(0xFF1E40AF) else Color(0xFF475569))
+                            Text(text = lang, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) c.accent else c.textSecondary)
                         }
                     }
                 }
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                Text("Language to Learn (Target)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
+                Text("Language to Learn (Target)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
                 OutlinedTextField(
                     value = targetInput,
                     onValueChange = { targetInput = it },
@@ -342,8 +345,8 @@ fun LearningGoalSettingsDialog(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF0054D1),
-                        unfocusedBorderColor = Color(0xFFCBD5E1)
+                        focusedBorderColor = c.accent,
+                        unfocusedBorderColor = c.textFaint
                     )
                 )
                 
@@ -357,18 +360,18 @@ fun LearningGoalSettingsDialog(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) Color(0xFFEFF6FF) else Color(0xFFF1F5F9))
-                                .border(1.dp, if (isSelected) Color(0xFF3B82F6) else Color.Transparent, RoundedCornerShape(8.dp))
+                                .background(if (isSelected) c.accentMuted else c.surfaceMuted)
+                                .border(1.dp, if (isSelected) c.accent else Color.Transparent, RoundedCornerShape(8.dp))
                                 .clickable { targetInput = lang }
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
-                            Text(text = lang, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) Color(0xFF1E40AF) else Color(0xFF475569))
+                            Text(text = lang, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) c.accent else c.textSecondary)
                         }
                     }
                 }
             }
         },
-        containerColor = Color.White,
+        containerColor = c.surface,
         shape = RoundedCornerShape(20.dp)
     )
 }
