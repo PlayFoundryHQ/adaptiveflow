@@ -51,7 +51,7 @@ import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: StudyViewModel by viewModels()
+    private val viewModel: StudyViewModel by viewModels { StudyViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
