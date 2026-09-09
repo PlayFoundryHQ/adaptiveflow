@@ -72,6 +72,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import java.io.File
 import java.io.FileOutputStream
@@ -80,6 +81,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun StudySessionScreen(viewModel: StudyViewModel) {
+    val c = AppTheme.colors
     val context = LocalContext.current
     val deck by viewModel.currentDeck.collectAsStateWithLifecycle()
     val cards by viewModel.currentFlashcards.collectAsStateWithLifecycle()
@@ -112,25 +114,25 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             shape = RoundedCornerShape(24.dp),
-            containerColor = Color.White,
+            containerColor = c.surface,
             icon = {
                 Icon(
                     imageVector = Icons.Default.DeleteSweep,
                     contentDescription = null,
-                    tint = Color(0xFFEF4444)
+                    tint = c.danger
                 )
             },
             title = {
                 Text(
                     text = "Delete \"${deck?.name ?: "this deck"}\"?",
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B)
+                    color = c.textPrimary
                 )
             },
             text = {
                 Text(
                     text = "This permanently deletes every card and all study progress in this deck. This cannot be undone.",
-                    color = Color(0xFF64748B)
+                    color = c.textSecondary
                 )
             },
             confirmButton = {
@@ -138,12 +140,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     showDeleteConfirmation = false
                     viewModel.deleteCurrentDeck()
                 }) {
-                    Text("Delete", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+                    Text("Delete", color = c.danger, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text("Cancel", color = Color(0xFF64748B))
+                    Text("Cancel", color = c.textSecondary)
                 }
             }
         )
@@ -166,7 +168,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
         AlertDialog(
             onDismissRequest = { /* Keep focus on summary options */ },
             shape = RoundedCornerShape(24.dp),
-            containerColor = Color.White,
+            containerColor = c.surface,
             title = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -176,7 +178,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         modifier = Modifier
                             .size(64.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFD1FAE5)),
+                            .background(c.successMuted),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("🎉", fontSize = 32.sp)
@@ -186,7 +188,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         text = "Session Complete!",
                         fontWeight = FontWeight.Black,
                         fontSize = 20.sp,
-                        color = Color(0xFF1E293B),
+                        color = c.textPrimary,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -200,12 +202,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                 ) {
                     Text(
                         text = "Outstanding work! You have flipped every card in the **${deck?.name}** deck to help visualize and lock in your vocabulary learning.",
-                        color = Color(0xFF64748B),
+                        color = c.textSecondary,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center
                     )
                     
-                    HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                    HorizontalDivider(color = c.surfaceMuted, thickness = 1.dp)
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -216,12 +218,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 text = "${cards.size}",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color(0xFF0054D1)
+                                color = c.accent
                             )
                             Text(
                                 text = "Total Cards",
                                 fontSize = 11.sp,
-                                color = Color(0xFF64748B)
+                                color = c.textSecondary
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -229,12 +231,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 text = "$correctTotal",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color(0xFF10B981)
+                                color = c.success
                             )
                             Text(
                                 text = "Correct",
                                 fontSize = 11.sp,
-                                color = Color(0xFF64748B)
+                                color = c.textSecondary
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -242,12 +244,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 text = "$incorrectTotal",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color(0xFFEF4444)
+                                color = c.danger
                             )
                             Text(
                                 text = "Incorrect",
                                 fontSize = 11.sp,
-                                color = Color(0xFF64748B)
+                                color = c.textSecondary
                             )
                         }
                     }
@@ -258,7 +260,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     onClick = {
                         viewModel.restartSession()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                    colors = ButtonDefaults.buttonColors(containerColor = c.success),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -285,12 +287,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         viewModel.clearActiveDeck()
                     },
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                    border = BorderStroke(1.dp, c.hairline),
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("exit_session_button")
                 ) {
-                    Text("EXIT TO LIBRARY", fontWeight = FontWeight.Bold, color = Color(0xFF64748B))
+                    Text("EXIT TO LIBRARY", fontWeight = FontWeight.Bold, color = c.textSecondary)
                 }
             }
         )
@@ -321,13 +323,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color(0xFF1E293B)
+                            tint = c.textPrimary
                         )
                     }
 
                     Text(
                         text = deck?.name ?: "",
-                        color = Color(0xFF1E293B),
+                        color = c.textPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -344,7 +346,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
                                 contentDescription = "Delete Deck",
-                                tint = Color(0xFFEF4444)
+                                tint = c.danger
                             )
                         }
                     } else {
@@ -360,7 +362,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = "This deck is protected and can't be deleted",
-                                tint = Color(0xFFCBD5E1)
+                                tint = c.textFaint
                             )
                         }
                     }
@@ -379,13 +381,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFEFF6FF)),
+                            .background(c.accentMuted),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.School,
                             contentDescription = null,
-                            tint = Color(0xFF0054D1),
+                            tint = c.accent,
                             modifier = Modifier.size(48.dp)
                         )
                     }
@@ -393,7 +395,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
 
                     Text(
                         text = "Dynamic Study Session",
-                        color = Color(0xFF1E293B),
+                        color = c.textPrimary,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         textAlign = TextAlign.Center
@@ -402,7 +404,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
 
                     Text(
                         text = "Adaptive Flow blends native pronunciations, smart flashcards, and multiple-choice quiz questions based on your real-time performance.",
-                        color = Color(0xFF64748B),
+                        color = c.textSecondary,
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
                         textAlign = TextAlign.Center,
@@ -421,7 +423,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             .clip(CircleShape)
                             .testTag("play_session_button"),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF0054D1)
+                            containerColor = c.accent
                         ),
                         contentPadding = PaddingValues(0.dp),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
@@ -430,13 +432,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.PlayArrow,
                                 contentDescription = "Play",
-                                tint = Color.White,
+                                tint = c.onAccent,
                                 modifier = Modifier.size(48.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "PLAY",
-                                color = Color.White,
+                                color = c.onAccent,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 12.sp,
                                 letterSpacing = 1.sp
@@ -466,13 +468,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color(0xFF1E293B)
+                            tint = c.textPrimary
                         )
                     }
 
                     Text(
                         text = deck?.name ?: "",
-                        color = Color(0xFF1E293B),
+                        color = c.textPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -488,7 +490,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = Icons.Default.Tune,
                             contentDescription = "Session Options",
-                            tint = Color(0xFF0054D1)
+                            tint = c.accent
                         )
                     }
 
@@ -500,7 +502,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
                                 contentDescription = "Delete Deck",
-                                tint = Color(0xFFEF4444)
+                                tint = c.danger
                             )
                         }
                     } else {
@@ -516,7 +518,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = "This deck is protected and can't be deleted",
-                                tint = Color(0xFFCBD5E1)
+                                tint = c.textFaint
                             )
                         }
                     }
@@ -525,9 +527,9 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                 if (cards.isEmpty()) {
                     Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = Color(0xFF0054D1))
+                            CircularProgressIndicator(color = c.accent)
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text("Loading Cards...", color = Color(0xFF1A1C1E))
+                            Text("Loading Cards...", color = c.textPrimary)
                         }
                     }
                 } else {
@@ -551,14 +553,14 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = "Flip Session Progress",
-                                    color = Color(0xFF1E293B),
+                                    color = c.textPrimary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Text(
                                 text = "$flippedCount of ${cards.size} flipped",
-                                color = Color(0xFF10B981),
+                                color = c.success,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black
                             )
@@ -570,8 +572,8 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 .fillMaxWidth()
                                 .height(8.dp)
                                 .clip(RoundedCornerShape(4.dp)),
-                            color = Color(0xFF10B981), // Beautiful green
-                            trackColor = Color(0xFFD1FAE5)
+                            color = c.success, // Beautiful green
+                            trackColor = c.successMuted
                         )
                     }
 
@@ -588,7 +590,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         ) {
                             Text(
                                 text = "✓ $correctTotal   ✗ $incorrectTotal",
-                                color = Color(0xFF44474E),
+                                color = c.textSecondary,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -600,7 +602,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             ) {
                                 Text(
                                     text = "AI Adaptive Status:",
-                                    color = Color(0xFF44474E),
+                                    color = c.textSecondary,
                                     fontSize = 10.sp
                                 )
                                 Box(
@@ -608,13 +610,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                         .size(8.dp)
                                         .clip(CircleShape)
                                         .background(
-                                            if (consecutiveStruggles >= 2) Color(0xFFFFA726) // Supportive Mode
-                                            else Color(0xFF66BB6A) // Standard Mode
+                                            if (consecutiveStruggles >= 2) c.warning // Supportive Mode
+                                            else c.success // Standard Mode
                                         )
                                 )
                                 Text(
                                     text = if (consecutiveStruggles >= 2) "Supportive" else "Standard",
-                                    color = if (consecutiveStruggles >= 2) Color(0xFFFFA726) else Color(0xFF66BB6A),
+                                    color = if (consecutiveStruggles >= 2) c.warning else c.success,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -645,14 +647,14 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                     .fillMaxWidth()
                                     .weight(0.42f),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFFDDE1FF)
+                                    containerColor = c.accentMuted
                                 ),
                                 shape = RoundedCornerShape(24.dp)
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .border(1.dp, Color(0xFFC4C6D0), RoundedCornerShape(24.dp))
+                                        .border(1.dp, c.hairline, RoundedCornerShape(24.dp))
                                         .padding(24.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -665,7 +667,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                             contentDescription = "Read Aloud",
-                                            tint = Color(0xFF001453),
+                                            tint = c.textPrimary,
                                             modifier = Modifier.size(28.dp)
                                         )
                                     }
@@ -673,7 +675,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(
                                             text = activeCard.front,
-                                            color = Color(0xFF001453),
+                                            color = c.textPrimary,
                                             fontSize = 32.sp,
                                             fontWeight = FontWeight.Black,
                                             textAlign = TextAlign.Center
@@ -681,7 +683,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
                                             text = "CHOOSE THE CORRECT MEANING",
-                                            color = Color(0xFF0054D1),
+                                            color = c.accent,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             letterSpacing = 1.sp
@@ -702,24 +704,24 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                     val isCorrect = option == activeCard.back
 
                                     val backgroundColor = when {
-                                        !isAnswerChecked -> Color.White
-                                        isCorrect -> Color(0xFFE8F5E9)
-                                        isSelected -> Color(0xFFFFEBEE)
-                                        else -> Color.White
+                                        !isAnswerChecked -> c.surface
+                                        isCorrect -> c.successMuted
+                                        isSelected -> c.dangerMuted
+                                        else -> c.surface
                                     }
 
                                     val textColor = when {
-                                        !isAnswerChecked -> Color(0xFF1A1C1E)
-                                        isCorrect -> Color(0xFF2E7D32)
-                                        isSelected -> Color(0xFFC62828)
-                                        else -> Color(0xFF44474E)
+                                        !isAnswerChecked -> c.textPrimary
+                                        isCorrect -> c.success
+                                        isSelected -> c.danger
+                                        else -> c.textSecondary
                                     }
 
                                     val borderColor = when {
-                                        !isAnswerChecked -> if (isSelected) Color(0xFF0054D1) else Color(0xFFC4C6D0)
-                                        isCorrect -> Color(0xFF81C784)
-                                        isSelected -> Color(0xFFE57373)
-                                        else -> Color(0xFFC4C6D0)
+                                        !isAnswerChecked -> if (isSelected) c.accent else c.hairline
+                                        isCorrect -> c.success
+                                        isSelected -> c.danger
+                                        else -> c.hairline
                                     }
 
                                     Card(
@@ -761,13 +763,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                                     Icon(
                                                         imageVector = Icons.Default.CheckCircle,
                                                         contentDescription = "Correct",
-                                                        tint = Color(0xFF2E7D32)
+                                                        tint = c.success
                                                     )
                                                 } else if (isSelected) {
                                                     Icon(
                                                         imageVector = Icons.Default.Cancel,
                                                         contentDescription = "Incorrect",
-                                                        tint = Color(0xFFC62828)
+                                                        tint = c.danger
                                                     )
                                                 }
                                             }
@@ -790,11 +792,11 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                         .height(52.dp)
                                         .testTag("quiz_continue_button"),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF0054D1)
+                                        containerColor = c.accent
                                     ),
                                     shape = RoundedCornerShape(14.dp)
                                 ) {
-                                    Text("CONTINUE", fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text("CONTINUE", fontWeight = FontWeight.Bold, color = c.onAccent)
                                 }
                             } else {
                                 Spacer(modifier = Modifier.height(52.dp))
@@ -830,7 +832,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             if (isFlipped) {
                                 Text(
                                     text = "Choose your recall confidence level on the card to update the study schedule.",
-                                    color = Color(0xFF64748B),
+                                    color = c.textSecondary,
                                     fontSize = 12.sp,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.padding(horizontal = 24.dp)
@@ -842,13 +844,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                         .fillMaxWidth()
                                         .height(56.dp)
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(Color(0xFF0054D1))
+                                        .background(c.accent)
                                         .clickable { viewModel.flipCard() },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "REVEAL TARGET WORD",
-                                        color = Color.White,
+                                        color = c.onAccent,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp,
                                         letterSpacing = 1.sp
@@ -862,11 +864,11 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, Color(0xFFC4C6D0), RoundedCornerShape(12.dp))
+                            .border(1.dp, c.hairline, RoundedCornerShape(12.dp))
                             .clickable { showTutorSheet = true }
                             .testTag("ai_tutor_trigger"),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.White
+                            containerColor = c.surface
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -885,26 +887,26 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                     modifier = Modifier
                                         .size(40.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFFE8F5E9)),
+                                        .background(c.successMuted),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Psychology,
                                         contentDescription = "AI Help",
-                                        tint = Color(0xFF2E7D32),
+                                        tint = c.success,
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
                                 Column {
                                     Text(
                                         text = "HELP / ASK AI TUTOR",
-                                        color = Color(0xFF1A1C1E),
+                                        color = c.textPrimary,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Black
                                     )
                                     Text(
                                         text = "Ask pronunciation, origin or usage hints",
-                                        color = Color(0xFF44474E),
+                                        color = c.textSecondary,
                                         fontSize = 10.sp
                                     )
                                 }
@@ -912,7 +914,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = "Open Chat",
-                                tint = Color(0xFF0054D1),
+                                tint = c.accent,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -940,8 +942,8 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFC4C6D0), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                    .background(c.surface)
+                    .border(1.dp, c.hairline, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                     .clickable(enabled = false) {}
                     .padding(24.dp)
                     .navigationBarsPadding(),
@@ -954,7 +956,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                 ) {
                     Text(
                         text = "Session Controls",
-                        color = Color(0xFF1A1C1E),
+                        color = c.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black
                     )
@@ -962,12 +964,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = Color(0xFF1A1C1E)
+                            tint = c.textPrimary
                         )
                     }
                 }
 
-                HorizontalDivider(color = Color(0xFFC4C6D0))
+                HorizontalDivider(color = c.hairline)
 
                 // Play Mode style
                 val isPlayModeActive by viewModel.isPlayModeActive.collectAsStateWithLifecycle()
@@ -979,13 +981,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     Column {
                         Text(
                             text = "Fluid Play Mode",
-                            color = Color(0xFF1A1C1E),
+                            color = c.textPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                         Text(
                             text = "Auto-mix flashcards and smart quiz questions",
-                            color = Color(0xFF44474E),
+                            color = c.textSecondary,
                             fontSize = 11.sp
                         )
                     }
@@ -994,7 +996,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         onCheckedChange = { viewModel.togglePlayMode(it) },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF0054D1)
+                            checkedTrackColor = c.accent
                         )
                     )
                 }
@@ -1008,13 +1010,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     Column {
                         Text(
                             text = "Auto-Play Pronunciation",
-                            color = Color(0xFF1A1C1E),
+                            color = c.textPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                         Text(
                             text = "Speak terms automatically when loaded",
-                            color = Color(0xFF44474E),
+                            color = c.textSecondary,
                             fontSize = 11.sp
                         )
                     }
@@ -1023,7 +1025,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         onCheckedChange = { viewModel.toggleAutoPlayTts(it) },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF0054D1)
+                            checkedTrackColor = c.accent
                         )
                     )
                 }
@@ -1037,13 +1039,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     ) {
                         Text(
                             text = "Pronunciation Speed",
-                            color = Color(0xFF1A1C1E),
+                            color = c.textPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                         Text(
                             text = "${speechRate}x",
-                            color = Color(0xFF0054D1),
+                            color = c.accent,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
@@ -1055,9 +1057,9 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         valueRange = 0.5f..1.5f,
                         steps = 3,
                         colors = SliderDefaults.colors(
-                            thumbColor = Color(0xFF0054D1),
-                            activeTrackColor = Color(0xFF0054D1),
-                            inactiveTrackColor = Color(0xFFDDE1FF)
+                            thumbColor = c.accent,
+                            activeTrackColor = c.accent,
+                            inactiveTrackColor = c.accentMuted
                         )
                     )
                 }
@@ -1084,8 +1086,8 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     .fillMaxHeight(0.82f)
                     .align(Alignment.BottomCenter)
                     .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .background(Color(0xFFF7F9FF))
-                    .border(1.dp, Color(0xFFC4C6D0), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                    .background(c.surfaceMuted)
+                    .border(1.dp, c.hairline, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                     .clickable(enabled = false) {}
             ) {
                 AiTutorBottomSheet(
@@ -1134,6 +1136,7 @@ fun InteractiveFlashcard(
     onSpeak: (String) -> Unit,
     onConfidenceSelected: (StudyViewModel.ConfidenceLevel) -> Unit
 ) {
+    val c = AppTheme.colors
     // 3D Card Flipping Rotation Animation
     val rotation by animateFloatAsState(
         targetValue = if (isFlipped) 180f else 0f,
@@ -1155,7 +1158,7 @@ fun InteractiveFlashcard(
             .clickable { onFlip() }
             .testTag("flashcard_box"),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = c.surface
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
@@ -1165,15 +1168,15 @@ fun InteractiveFlashcard(
                 .background(
                     if (rotation <= 90f) {
                         Brush.verticalGradient(
-                            listOf(Color(0xFFEFF6FF), Color(0xFFDBEAFE))
+                            listOf(c.accentMuted, c.accentMuted)
                         )
                     } else {
                         Brush.verticalGradient(
-                            listOf(Color(0xFFFFFFFF), Color(0xFFF8FAFC))
+                            listOf(c.surface, c.surfaceMuted)
                         )
                     }
                 )
-                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(24.dp))
+                .border(1.dp, c.hairline, RoundedCornerShape(24.dp))
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -1189,7 +1192,7 @@ fun InteractiveFlashcard(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                             contentDescription = "Read Aloud",
-                            tint = Color(0xFF0054D1),
+                            tint = c.accent,
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -1203,14 +1206,14 @@ fun InteractiveFlashcard(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(CircleShape)
-                                .background(Color(0x150054D1))
+                                .background(c.accentMuted)
                                 .padding(12.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = getIconForCard(card),
                                 contentDescription = "Concept Icon",
-                                tint = Color(0xFF0054D1),
+                                tint = c.accent,
                                 modifier = Modifier.size(36.dp)
                             )
                         }
@@ -1218,7 +1221,7 @@ fun InteractiveFlashcard(
 
                         Text(
                             text = card.front,
-                            color = Color(0xFF1E293B),
+                            color = c.textPrimary,
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Black,
                             textAlign = TextAlign.Center
@@ -1227,12 +1230,12 @@ fun InteractiveFlashcard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFF0054D1))
+                                .background(c.accent)
                                 .padding(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = "SOURCE TERM",
-                                color = Color.White,
+                                color = c.onAccent,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
@@ -1246,18 +1249,18 @@ fun InteractiveFlashcard(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0x100054D1))
+                                .background(c.accentMuted)
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.VisibilityOff,
                                 contentDescription = "Hidden Target Word",
-                                tint = Color(0xFF0054D1).copy(alpha = 0.7f),
+                                tint = c.accent.copy(alpha = 0.7f),
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
                                 text = "Target word hidden (Tap card)",
-                                color = Color(0xFF0054D1).copy(alpha = 0.8f),
+                                color = c.accent.copy(alpha = 0.8f),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -1280,7 +1283,7 @@ fun InteractiveFlashcard(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                             contentDescription = "Read Aloud",
-                            tint = Color(0xFF0054D1),
+                            tint = c.accent,
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -1293,14 +1296,14 @@ fun InteractiveFlashcard(
                         Icon(
                             imageVector = getIconForCard(card),
                             contentDescription = "Concept Icon Back",
-                            tint = Color(0xFF0054D1).copy(alpha = 0.6f),
+                            tint = c.accent.copy(alpha = 0.6f),
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
                             text = card.back,
-                            color = Color(0xFF0054D1),
+                            color = c.accent,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Black,
                             textAlign = TextAlign.Center
@@ -1310,7 +1313,7 @@ fun InteractiveFlashcard(
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 text = card.notes,
-                                color = Color(0xFF64748B),
+                                color = c.textSecondary,
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp,
                                 textAlign = TextAlign.Center,
@@ -1322,12 +1325,12 @@ fun InteractiveFlashcard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFEFF6FF))
+                                .background(c.accentMuted)
                                 .padding(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = "TARGET TRANSLATION",
-                                color = Color(0xFF0054D1),
+                                color = c.accent,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
@@ -1338,7 +1341,7 @@ fun InteractiveFlashcard(
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
                             text = "RATE YOUR RECALL CONFIDENCE:",
-                            color = Color(0xFF64748B),
+                            color = c.textSecondary,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
@@ -1356,8 +1359,8 @@ fun InteractiveFlashcard(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(Color(0xFFFEE2E2))
-                                    .border(1.dp, Color(0xFFFECACA), RoundedCornerShape(14.dp))
+                                    .background(c.dangerMuted)
+                                    .border(1.dp, c.dangerMuted, RoundedCornerShape(14.dp))
                                     .clickable { onConfidenceSelected(StudyViewModel.ConfidenceLevel.LOW) }
                                     .testTag("incorrect_answer_button")
                                     .padding(vertical = 12.dp),
@@ -1366,13 +1369,13 @@ fun InteractiveFlashcard(
                                 Icon(
                                     imageVector = Icons.Default.SentimentVeryDissatisfied,
                                     contentDescription = "Low Confidence",
-                                    tint = Color(0xFFDC2626),
+                                    tint = c.danger,
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
                                     text = "LOW",
-                                    color = Color(0xFF991B1B),
+                                    color = c.danger,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -1383,8 +1386,8 @@ fun InteractiveFlashcard(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(Color(0xFFFEF3C7))
-                                    .border(1.dp, Color(0xFFFDE68A), RoundedCornerShape(14.dp))
+                                    .background(c.warningMuted)
+                                    .border(1.dp, c.warningMuted, RoundedCornerShape(14.dp))
                                     .clickable { onConfidenceSelected(StudyViewModel.ConfidenceLevel.MEDIUM) }
                                     .testTag("medium_confidence_button")
                                     .padding(vertical = 12.dp),
@@ -1393,13 +1396,13 @@ fun InteractiveFlashcard(
                                 Icon(
                                     imageVector = Icons.Default.SentimentNeutral,
                                     contentDescription = "Medium Confidence",
-                                    tint = Color(0xFFD97706),
+                                    tint = c.warning,
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
                                     text = "MEDIUM",
-                                    color = Color(0xFF92400E),
+                                    color = c.warning,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -1410,8 +1413,8 @@ fun InteractiveFlashcard(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(Color(0xFFD1FAE5))
-                                    .border(1.dp, Color(0xFFA7F3D0), RoundedCornerShape(14.dp))
+                                    .background(c.successMuted)
+                                    .border(1.dp, c.successMuted, RoundedCornerShape(14.dp))
                                     .clickable { onConfidenceSelected(StudyViewModel.ConfidenceLevel.HIGH) }
                                     .testTag("correct_answer_button")
                                     .padding(vertical = 12.dp),
@@ -1420,13 +1423,13 @@ fun InteractiveFlashcard(
                                 Icon(
                                     imageVector = Icons.Default.SentimentVerySatisfied,
                                     contentDescription = "High Confidence",
-                                    tint = Color(0xFF059669),
+                                    tint = c.success,
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
                                     text = "HIGH",
-                                    color = Color(0xFF065F46),
+                                    color = c.success,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )

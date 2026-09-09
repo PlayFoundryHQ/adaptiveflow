@@ -72,6 +72,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import java.io.File
 import java.io.FileOutputStream
@@ -80,6 +81,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ImportTab(viewModel: StudyViewModel) {
+    val c = AppTheme.colors
     var isSettingsOpen by remember { mutableStateOf(false) }
     var isDiagnosticsOpen by remember { mutableStateOf(false) }
 
@@ -234,14 +236,14 @@ fun ImportTab(viewModel: StudyViewModel) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "One-Tap Import",
-                        color = Color(0xFF1E293B),
+                        color = c.textPrimary,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Black
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Seamlessly build decks using raw texts, YouTube links, or PDF files.",
-                        color = Color(0xFF64748B),
+                        color = c.textSecondary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -256,12 +258,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFEF2F2))
+                            .background(c.dangerMuted)
                     ) {
                         Icon(
                             imageVector = Icons.Default.BugReport,
                             contentDescription = "Diagnostic Logs",
-                            tint = Color(0xFFEF4444),
+                            tint = c.danger,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -271,12 +273,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF1F5F9))
+                            .background(c.surfaceMuted)
                     ) {
                         Icon(
                             imageVector = Icons.Default.VpnKey,
                             contentDescription = "API Key Configuration",
-                            tint = Color(0xFF64748B),
+                            tint = c.textSecondary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -290,7 +292,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFF1F5F9))
+                    .background(c.surfaceMuted)
                     .padding(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -306,7 +308,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             .weight(1f)
                             .height(38.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (isSelected) Color.White else Color.Transparent)
+                            .background(if (isSelected) c.surface else Color.Transparent)
                             .clickable {
                                 selectedImportMode = modeKey
                                 rawText = "" // clear text on mode swap to keep it clean
@@ -323,7 +325,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                     ) {
                         Text(
                             text = label,
-                            color = if (isSelected) Color(0xFF0054D1) else Color(0xFF64748B),
+                            color = if (isSelected) c.accent else c.textSecondary,
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                         )
@@ -337,7 +339,7 @@ fun ImportTab(viewModel: StudyViewModel) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF).copy(alpha = 0.8f))
+                colors = CardDefaults.cardColors(containerColor = c.accentMuted.copy(alpha = 0.8f))
             ) {
                 Row(
                     modifier = Modifier.padding(14.dp),
@@ -348,7 +350,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(Color.White),
+                            .background(c.surface),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -358,7 +360,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 else -> Icons.AutoMirrored.Filled.Subject
                             },
                             contentDescription = null,
-                            tint = Color(0xFF0054D1),
+                            tint = c.accent,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -369,7 +371,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 "PDF" -> "PDF & File Processing"
                                 else -> "Structured Text Parsing"
                             },
-                            color = Color(0xFF1E293B),
+                            color = c.textPrimary,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -380,7 +382,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 "PDF" -> "To study books or PDFs, copy-paste their text chapters or public links. You can also pick a local plain text file directly!"
                                 else -> "Paste CSV pairs (Front, Back), vocabulary bullet lists, or raw sentences. With an API key the AI extracts translation pairs and adds pronunciation and usage notes where it can; without one, plain \"word: meaning\" lines still import offline."
                             },
-                            color = Color(0xFF64748B),
+                            color = c.textSecondary,
                             fontSize = 11.sp,
                             lineHeight = 15.sp
                         )
@@ -395,11 +397,11 @@ fun ImportTab(viewModel: StudyViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isExternalHelperExpanded) Color(0xFFFAF5FF) else Color(0xFFF8FAFC)
+                    containerColor = if (isExternalHelperExpanded) c.surfaceMuted else c.surfaceMuted
                 ),
                 border = BorderStroke(
                     1.dp, 
-                    if (isExternalHelperExpanded) Color(0xFFE9D5FF) else Color(0xFFE2E8F0)
+                    if (isExternalHelperExpanded) c.hairline else c.hairline
                 )
             ) {
                 Column(
@@ -415,46 +417,46 @@ fun ImportTab(viewModel: StudyViewModel) {
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(if (isExternalHelperExpanded) Color(0xFFF3E8FF) else Color(0xFFF1F5F9)),
+                                .background(if (isExternalHelperExpanded) c.surfaceMuted else c.surfaceMuted),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = if (isExternalHelperExpanded) Icons.Default.AutoAwesome else Icons.AutoMirrored.Filled.Help,
                                 contentDescription = null,
-                                tint = if (isExternalHelperExpanded) Color(0xFF9333EA) else Color(0xFF64748B),
+                                tint = if (isExternalHelperExpanded) Color(0xFF9333EA) else c.textSecondary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "💡 Study Large PDFs, Books or Long Videos?",
-                                color = if (isExternalHelperExpanded) Color(0xFF7E22CE) else Color(0xFF1E293B),
+                                color = if (isExternalHelperExpanded) Color(0xFF7E22CE) else c.textPrimary,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = if (isExternalHelperExpanded) "Tap to collapse external guide" else "Tap for a copyable expert prompt to let ChatGPT/Claude/Gemini do the heavy lifting!",
-                                color = Color(0xFF64748B),
+                                color = c.textSecondary,
                                 fontSize = 11.sp
                             )
                         }
                         Icon(
                             imageVector = if (isExternalHelperExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                             contentDescription = "Expand or collapse",
-                            tint = Color(0xFF64748B),
+                            tint = c.textSecondary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
 
                     if (isExternalHelperExpanded) {
                         Spacer(modifier = Modifier.height(14.dp))
-                        HorizontalDivider(color = Color(0xFFE9D5FF).copy(alpha = 0.5f))
+                        HorizontalDivider(color = c.hairline.copy(alpha = 0.5f))
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
                             text = "Why inline parsers generate fewer cards for large files:",
-                            color = Color(0xFF581C87),
+                            color = c.textPrimary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -470,7 +472,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 Text("•", color = Color(0xFF9333EA), fontWeight = FontWeight.Bold)
                                 Text(
                                     "Rate Limits & Token Caps: Multi-page text split into many sequential API requests often triggers protection limits or hits context limits on mobile connections.",
-                                    color = Color(0xFF475569),
+                                    color = c.textSecondary,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
                                 )
@@ -483,7 +485,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 Text("•", color = Color(0xFF9333EA), fontWeight = FontWeight.Bold)
                                 Text(
                                     "Layout Extraction: Scanned, encrypted, columns-based, or diagram-rich PDFs contain text streams that local parsers cannot always extract cleanly.",
-                                    color = Color(0xFF475569),
+                                    color = c.textSecondary,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
                                 )
@@ -496,7 +498,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 Text("•", color = Color(0xFF9333EA), fontWeight = FontWeight.Bold)
                                 Text(
                                     "Video Transcripts: YouTube restriction policies (like geo-fencing, age gates, or disabled captions) block client-side access to full transcripts.",
-                                    color = Color(0xFF475569),
+                                    color = c.textSecondary,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
                                 )
@@ -549,14 +551,14 @@ fun ImportTab(viewModel: StudyViewModel) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFF5F3FF))
-                                .border(1.dp, Color(0xFFDDD6FE), RoundedCornerShape(12.dp))
+                                .background(c.surfaceMuted)
+                                .border(1.dp, c.hairline, RoundedCornerShape(12.dp))
                                 .padding(12.dp)
                         ) {
                             Column {
                                 Text(
                                     text = promptTemplate,
-                                    color = Color(0xFF4C1D95),
+                                    color = c.textPrimary,
                                     fontSize = 10.sp,
                                     fontFamily = FontFamily.Monospace,
                                     maxLines = 8,
@@ -592,14 +594,14 @@ fun ImportTab(viewModel: StudyViewModel) {
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
                             text = "💡 How to import the result:",
-                            color = Color(0xFF581C87),
+                            color = c.textPrimary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "1. Copy the prompt above and paste it into ChatGPT, Claude, or Gemini Advanced.\n2. Paste your long PDF text or video transcript at the bottom of the prompt.\n3. Run it, copy the resulting JSON, and switch to the '📝 Paste' tab above.\n4. Paste the JSON directly and tap 'PARSE DECK WITH AI' to import instantly!",
-                            color = Color(0xFF64748B),
+                            color = c.textSecondary,
                             fontSize = 11.sp,
                             lineHeight = 15.sp
                         )
@@ -614,8 +616,8 @@ fun ImportTab(viewModel: StudyViewModel) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
-                    border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    colors = CardDefaults.cardColors(containerColor = c.surfaceMuted),
+                    border = BorderStroke(1.dp, c.hairline)
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -627,21 +629,21 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(
-                                    if (attachedFileMimeType.contains("pdf")) Color(0xFFFEF2F2) else Color(0xFFF0FDF4)
+                                    if (attachedFileMimeType.contains("pdf")) c.dangerMuted else c.successMuted
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
                                 contentDescription = null,
-                                tint = if (attachedFileMimeType.contains("pdf")) Color(0xFFEF4444) else Color(0xFF22C55E),
+                                tint = if (attachedFileMimeType.contains("pdf")) c.danger else c.success,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = attachedFileName,
-                                color = Color(0xFF1E293B),
+                                color = c.textPrimary,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
@@ -650,7 +652,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Ready to parse • ${formatFileSize(attachedFileSize)}",
-                                color = Color(0xFF64748B),
+                                color = c.textSecondary,
                                 fontSize = 12.sp
                             )
                         }
@@ -665,7 +667,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Remove file",
-                                tint = Color(0xFF94A3B8)
+                                tint = c.textFaint
                             )
                         }
                     }
@@ -693,17 +695,17 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 else -> "Paste vocabulary list here:\n- Bonjour: Hello\n- Arigatou: Thank you\nOr paste any natural prose paragraphs!"
                             }
                         },
-                        color = Color(0xFF94A3B8),
+                        color = c.textFaint,
                         fontSize = 14.sp,
                         lineHeight = 20.sp
                     )
                 },
-                textStyle = LocalTextStyle.current.copy(color = Color(0xFF1E293B), fontSize = 14.sp),
+                textStyle = LocalTextStyle.current.copy(color = c.textPrimary, fontSize = 14.sp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF0054D1),
-                    unfocusedBorderColor = Color(0xFFE2E8F0),
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedBorderColor = c.accent,
+                    unfocusedBorderColor = c.hairline,
+                    focusedContainerColor = c.surface,
+                    unfocusedContainerColor = c.surface
                 ),
                 shape = RoundedCornerShape(16.dp),
                 keyboardOptions = KeyboardOptions(
@@ -727,7 +729,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                 placeholder = {
                     Text(
                         text = "e.g. 'Swedish', 'French idioms', 'Medical vocabulary'",
-                        color = Color(0xFF94A3B8),
+                        color = c.textFaint,
                         fontSize = 14.sp
                     )
                 },
@@ -738,12 +740,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                         fontWeight = FontWeight.Bold
                     )
                 },
-                textStyle = LocalTextStyle.current.copy(color = Color(0xFF1E293B), fontSize = 14.sp),
+                textStyle = LocalTextStyle.current.copy(color = c.textPrimary, fontSize = 14.sp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF0054D1),
-                    unfocusedBorderColor = Color(0xFFE2E8F0),
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedBorderColor = c.accent,
+                    unfocusedBorderColor = c.hairline,
+                    focusedContainerColor = c.surface,
+                    unfocusedContainerColor = c.surface
                 ),
                 shape = RoundedCornerShape(14.dp),
                 singleLine = true,
@@ -766,8 +768,8 @@ fun ImportTab(viewModel: StudyViewModel) {
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF0054D1)),
-                    border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = c.accent),
+                    border = BorderStroke(1.dp, c.hairline)
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -795,7 +797,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                 ) {
                     Text(
                         text = "Tap to test with a preloaded educational video link:",
-                        color = Color(0xFF64748B),
+                        color = c.textSecondary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -811,7 +813,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             enabled = importState !is StudyViewModel.ImportState.Loading,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp),
-                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            border = BorderStroke(1.dp, c.hairline),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text("🇫🇷 French Song Lesson", fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -824,7 +826,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             enabled = importState !is StudyViewModel.ImportState.Loading,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp),
-                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            border = BorderStroke(1.dp, c.hairline),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text("🇯🇵 Tokyo Travel Phrases", fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -842,11 +844,11 @@ fun ImportTab(viewModel: StudyViewModel) {
                     .padding(vertical = 8.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isMergeEnabled) Color(0xFFF0FDF4) else Color(0xFFF8FAFC)
+                    containerColor = if (isMergeEnabled) c.successMuted else c.surfaceMuted
                 ),
                 border = BorderStroke(
                     width = 1.2.dp,
-                    color = if (isMergeEnabled) Color(0xFFBBF7D0) else Color(0xFFE2E8F0)
+                    color = if (isMergeEnabled) c.successMuted else c.hairline
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -863,26 +865,26 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(if (isMergeEnabled) Color(0xFFDCFCE7) else Color(0xFFF1F5F9)),
+                                    .background(if (isMergeEnabled) c.successMuted else c.surfaceMuted),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Layers,
                                     contentDescription = null,
-                                    tint = if (isMergeEnabled) Color(0xFF16A34A) else Color(0xFF64748B),
+                                    tint = if (isMergeEnabled) c.success else c.textSecondary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
                             Column {
                                 Text(
                                     text = "Smart Merge & Enrich",
-                                    color = if (isMergeEnabled) Color(0xFF15803D) else Color(0xFF1E293B),
+                                    color = if (isMergeEnabled) c.success else c.textPrimary,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     text = "Append terms to a unified master pool",
-                                    color = Color(0xFF64748B),
+                                    color = c.textSecondary,
                                     fontSize = 11.sp
                                 )
                             }
@@ -892,19 +894,19 @@ fun ImportTab(viewModel: StudyViewModel) {
                             onCheckedChange = { isMergeEnabled = it },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF16A34A)
+                                checkedTrackColor = c.success
                             )
                         )
                     }
 
                     if (isMergeEnabled) {
                         Spacer(modifier = Modifier.height(14.dp))
-                        HorizontalDivider(color = Color(0xFFBBF7D0).copy(alpha = 0.5f))
+                        HorizontalDivider(color = c.successMuted.copy(alpha = 0.5f))
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
                             text = "SELECT TARGET STUDY POOL / DECK:",
-                            color = Color(0xFF15803D),
+                            color = c.success,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.8.sp
@@ -916,8 +918,8 @@ fun ImportTab(viewModel: StudyViewModel) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFF86EFAC), RoundedCornerShape(12.dp))
+                                .background(c.surface)
+                                .border(1.dp, c.successMuted, RoundedCornerShape(12.dp))
                                 .clickable { isDeckDropdownExpanded = true }
                                 .padding(horizontal = 14.dp, vertical = 12.dp)
                         ) {
@@ -933,12 +935,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                                     Icon(
                                         imageVector = Icons.Default.Folder,
                                         contentDescription = null,
-                                        tint = Color(0xFF16A34A),
+                                        tint = c.success,
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Text(
                                         text = targetDeck?.name ?: "Select study pool...",
-                                        color = Color(0xFF1E293B),
+                                        color = c.textPrimary,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -946,7 +948,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = Icons.Default.ArrowDropDown,
                                     contentDescription = "Dropdown",
-                                    tint = Color(0xFF16A34A)
+                                    tint = c.success
                                 )
                             }
 
@@ -955,7 +957,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 onDismissRequest = { isDeckDropdownExpanded = false },
                                 modifier = Modifier
                                     .fillMaxWidth(0.85f)
-                                    .background(Color.White)
+                                    .background(c.surface)
                             ) {
                                 decks.forEach { deckWithCards ->
                                     DropdownMenuItem(
@@ -967,7 +969,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                                 Icon(
                                                     imageVector = Icons.Default.Folder,
                                                     contentDescription = null,
-                                                    tint = if (deckWithCards.deck.name.contains("Master Vocabulary Pool")) Color(0xFF8B5CF6) else Color(0xFF16A34A),
+                                                    tint = if (deckWithCards.deck.name.contains("Master Vocabulary Pool")) Color(0xFF8B5CF6) else c.success,
                                                     modifier = Modifier.size(18.dp)
                                                 )
                                                 Column {
@@ -995,7 +997,7 @@ fun ImportTab(viewModel: StudyViewModel) {
 
                         Spacer(modifier = Modifier.height(10.dp))
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFDCFCE7).copy(alpha = 0.5f)),
+                            colors = CardDefaults.cardColors(containerColor = c.successMuted.copy(alpha = 0.5f)),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(
@@ -1006,12 +1008,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = Icons.Default.Info,
                                     contentDescription = null,
-                                    tint = Color(0xFF15803D),
+                                    tint = c.success,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
                                     text = "Smart merge will automatically check for existing terms in the target pool. New context sentences are appended to existing cards instead of creating duplicates!",
-                                    color = Color(0xFF15803D),
+                                    color = c.success,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
                                 )
@@ -1029,8 +1031,8 @@ fun ImportTab(viewModel: StudyViewModel) {
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
-                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                colors = CardDefaults.cardColors(containerColor = c.surfaceMuted),
+                border = BorderStroke(1.dp, c.hairline)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -1041,26 +1043,26 @@ fun ImportTab(viewModel: StudyViewModel) {
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFEFF6FF)),
+                                .background(c.accentMuted),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DensityMedium,
                                 contentDescription = null,
-                                tint = Color(0xFF0054D1),
+                                tint = c.accent,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
                         Column {
                             Text(
                                 text = "Card Extraction Density",
-                                color = Color(0xFF1E293B),
+                                color = c.textPrimary,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = "Tune flashcard generation volume per chunk",
-                                color = Color(0xFF64748B),
+                                color = c.textSecondary,
                                 fontSize = 11.sp
                             )
                         }
@@ -1072,7 +1074,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF1F5F9))
+                            .background(c.surfaceMuted)
                             .padding(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -1087,7 +1089,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(if (isSelected) Color.White else Color.Transparent)
+                                    .background(if (isSelected) c.surface else Color.Transparent)
                                     .clickable { selectedDensity = densityKey }
                                     .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
@@ -1095,7 +1097,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
                                         text = label,
-                                        color = if (isSelected) Color(0xFF0054D1) else Color(0xFF64748B),
+                                        color = if (isSelected) c.accent else c.textSecondary,
                                         fontSize = 12.sp,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
@@ -1107,7 +1109,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                             "Exhaustive" -> "Uncapped (full document)"
                                             else -> ""
                                         },
-                                        color = if (isSelected) Color(0xFF0054D1).copy(alpha = 0.7f) else Color(0xFF94A3B8),
+                                        color = if (isSelected) c.accent.copy(alpha = 0.7f) else c.textFaint,
                                         fontSize = 10.sp
                                     )
                                 }
@@ -1137,8 +1139,8 @@ fun ImportTab(viewModel: StudyViewModel) {
                     .height(54.dp)
                     .testTag("import_parse_button"),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0054D1),
-                    disabledContainerColor = Color(0xFFCBD5E1)
+                    containerColor = c.accent,
+                    disabledContainerColor = c.textFaint
                 ),
                 shape = RoundedCornerShape(16.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
@@ -1149,12 +1151,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = c.onAccent,
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
                             text = (importState as StudyViewModel.ImportState.Loading).message,
-                            color = Color.White,
+                            color = c.onAccent,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -1164,13 +1166,13 @@ fun ImportTab(viewModel: StudyViewModel) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White)
+                        Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, tint = c.onAccent)
                         Text(
                             text = if (selectedImportMode == "YouTube") "AUTOMAGIC GENERATE" else "PARSE DECK WITH AI",
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp,
                             letterSpacing = 1.sp,
-                            color = Color.White
+                            color = c.onAccent
                         )
                     }
                 }
@@ -1187,8 +1189,8 @@ fun ImportTab(viewModel: StudyViewModel) {
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFFDECEC))
-                        .border(1.dp, Color(0xFFF5A3A3), RoundedCornerShape(16.dp))
+                        .background(c.dangerMuted)
+                        .border(1.dp, c.dangerMuted, RoundedCornerShape(16.dp))
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.Top
@@ -1196,12 +1198,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                     Icon(
                         imageVector = Icons.Default.ErrorOutline,
                         contentDescription = null,
-                        tint = Color(0xFFC62828),
+                        tint = c.danger,
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
                         text = currentImportState.message,
-                        color = Color(0xFF8B1D1D),
+                        color = c.danger,
                         fontSize = 13.sp,
                         modifier = Modifier.weight(1f)
                     )
@@ -1212,7 +1214,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Dismiss",
-                            tint = Color(0xFFC62828),
+                            tint = c.danger,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -1230,8 +1232,8 @@ fun ImportTab(viewModel: StudyViewModel) {
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFE7F8EF))
-                        .border(1.dp, Color(0xFFA3E5C2), RoundedCornerShape(16.dp))
+                        .background(c.successMuted)
+                        .border(1.dp, c.successMuted, RoundedCornerShape(16.dp))
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.Top
@@ -1239,12 +1241,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = Color(0xFF1B8A4C),
+                        tint = c.success,
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
                         text = "Deck saved: ${currentImportState.deckName}",
-                        color = Color(0xFF14532D),
+                        color = c.success,
                         fontSize = 13.sp,
                         modifier = Modifier.weight(1f)
                     )
@@ -1255,7 +1257,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Dismiss",
-                            tint = Color(0xFF1B8A4C),
+                            tint = c.success,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -1273,7 +1275,7 @@ fun ImportTab(viewModel: StudyViewModel) {
             ) {
                 Text(
                     text = "Instant Quick-Start Sample Decks",
-                    color = Color(0xFF0054D1),
+                    color = c.accent,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 0.5.sp
@@ -1313,6 +1315,7 @@ fun QuickSeedDeckButton(
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
+    val c = AppTheme.colors
     val emoji = when {
         title.contains("French") -> "🇫🇷"
         title.contains("Japanese") -> "🇯🇵"
@@ -1330,8 +1333,8 @@ fun QuickSeedDeckButton(
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.5f)
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
+            .background(c.surface)
+            .border(1.dp, c.hairline, RoundedCornerShape(16.dp))
             .clickable(enabled = enabled) { onClick() }
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -1350,14 +1353,14 @@ fun QuickSeedDeckButton(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title.replace("🇫🇷 ", "").replace("🇯🇵 ", ""),
-                color = Color(0xFF1E293B),
+                color = c.textPrimary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = desc,
-                color = Color(0xFF64748B),
+                color = c.textSecondary,
                 fontSize = 11.sp
             )
         }
@@ -1366,13 +1369,13 @@ fun QuickSeedDeckButton(
             modifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFEFF6FF)),
+                .background(c.accentMuted),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Bolt,
                 contentDescription = "Quick Seed",
-                tint = Color(0xFF0054D1),
+                tint = c.accent,
                 modifier = Modifier.size(16.dp)
             )
         }
