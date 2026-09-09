@@ -71,6 +71,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import java.io.File
@@ -87,6 +88,7 @@ fun PathTab(
     val nativeLanguage by viewModel.nativeLanguage.collectAsStateWithLifecycle()
     val targetLanguage by viewModel.targetLanguage.collectAsStateWithLifecycle()
     var selectedNodeDeck by remember { mutableStateOf<io.github.playfoundryhq.adaptiveflow.data.model.DeckWithCards?>(null) }
+    val c = AppTheme.colors
 
     // Compute Crowns
     val crownsCount = remember(decks) {
@@ -120,13 +122,13 @@ fun PathTab(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = c.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(18.dp))
+                        .border(1.dp, c.hairline, RoundedCornerShape(18.dp))
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
@@ -140,14 +142,14 @@ fun PathTab(
                                 text = if (streakDays > 0) "$streakDays Days" else "0 Days",
                                 fontWeight = FontWeight.Black,
                                 fontSize = 16.sp,
-                                color = Color(0xFF1E293B)
+                                color = c.textPrimary
                             )
                         }
-                        Text("Streak", fontSize = 11.sp, color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
+                        Text("Streak", fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
                     }
 
                     // Vertical Divider
-                    Box(modifier = Modifier.width(1.dp).height(36.dp).background(Color(0xFFE2E8F0)))
+                    Box(modifier = Modifier.width(1.dp).height(36.dp).background(c.hairline))
 
                     // XP
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -158,14 +160,14 @@ fun PathTab(
                                 text = "$totalXp XP",
                                 fontWeight = FontWeight.Black,
                                 fontSize = 16.sp,
-                                color = Color(0xFF1E293B)
+                                color = c.textPrimary
                             )
                         }
-                        Text("Total Points", fontSize = 11.sp, color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
+                        Text("Total Points", fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
                     }
 
                     // Vertical Divider
-                    Box(modifier = Modifier.width(1.dp).height(36.dp).background(Color(0xFFE2E8F0)))
+                    Box(modifier = Modifier.width(1.dp).height(36.dp).background(c.hairline))
 
                     // Crowns
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -176,10 +178,10 @@ fun PathTab(
                                 text = if (crownsCount > 0) "$crownsCount" else "0",
                                 fontWeight = FontWeight.Black,
                                 fontSize = 16.sp,
-                                color = Color(0xFF1E293B)
+                                color = c.textPrimary
                             )
                         }
-                        Text("Crowns Earned", fontSize = 11.sp, color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
+                        Text("Crowns Earned", fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -199,7 +201,7 @@ fun PathTab(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A))
+                        colors = CardDefaults.cardColors(containerColor = c.heroSurface)
                     ) {
                         Column(
                             modifier = Modifier
@@ -213,7 +215,7 @@ fun PathTab(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(6.dp))
-                                        .background(Color(0xFFD97706))
+                                        .background(c.warning)
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
@@ -228,14 +230,14 @@ fun PathTab(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Learn $targetLanguage from $nativeLanguage",
-                                color = Color.White,
+                                color = c.heroText,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Manage your global languages directly below. Your adaptive flashcards and tutors will instantly tune to this goal.",
-                                color = Color.White.copy(alpha = 0.75f),
+                                color = c.heroTextMuted,
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
                             )
@@ -250,13 +252,13 @@ fun PathTab(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = c.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
+                                .border(1.dp, c.hairline, RoundedCornerShape(16.dp))
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
@@ -264,7 +266,7 @@ fun PathTab(
                                 text = "Goal Configuration",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E293B)
+                                color = c.textPrimary
                             )
 
                             // Native Language Selector
@@ -273,7 +275,7 @@ fun PathTab(
                                     text = "Your Native Language:",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF64748B)
+                                    color = c.textSecondary
                                 )
                                 val nativeOptions = listOf("English", "Spanish", "French", "German")
                                 LazyRow(
@@ -285,10 +287,10 @@ fun PathTab(
                                         Box(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(8.dp))
-                                                .background(if (isSelected) Color(0xFFEFF6FF) else Color(0xFFF1F5F9))
+                                                .background(if (isSelected) c.accentMuted else c.surfaceMuted)
                                                 .border(
                                                     1.dp,
-                                                    if (isSelected) Color(0xFF0054D1) else Color(0xFFE2E8F0),
+                                                    if (isSelected) c.accent else c.hairline,
                                                     RoundedCornerShape(8.dp)
                                                 )
                                                 .clickable { viewModel.updateLearningGoal(lang, targetLanguage) }
@@ -298,7 +300,7 @@ fun PathTab(
                                                 text = lang,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = if (isSelected) Color(0xFF0054D1) else Color(0xFF475569)
+                                                color = if (isSelected) c.accent else c.textSecondary
                                             )
                                         }
                                     }
@@ -311,7 +313,7 @@ fun PathTab(
                                     text = "Language to Learn (Target):",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF64748B)
+                                    color = c.textSecondary
                                 )
                                 val targetOptions = listOf("Swedish", "Spanish", "French", "German", "Italian", "Japanese", "Persian")
                                 LazyRow(
@@ -323,10 +325,10 @@ fun PathTab(
                                         Box(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(8.dp))
-                                                .background(if (isSelected) Color(0xFFFEF3C7) else Color(0xFFF1F5F9))
+                                                .background(if (isSelected) c.warningMuted else c.surfaceMuted)
                                                 .border(
                                                     1.dp,
-                                                    if (isSelected) Color(0xFFD97706) else Color(0xFFE2E8F0),
+                                                    if (isSelected) c.warning else c.hairline,
                                                     RoundedCornerShape(8.dp)
                                                 )
                                                 .clickable { viewModel.updateLearningGoal(nativeLanguage, lang) }
@@ -336,7 +338,7 @@ fun PathTab(
                                                 text = lang,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = if (isSelected) Color(0xFFB45309) else Color(0xFF475569)
+                                                color = if (isSelected) c.warning else c.textSecondary
                                             )
                                         }
                                     }
@@ -359,20 +361,20 @@ fun PathTab(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = c.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
+                                .border(1.dp, c.hairline, RoundedCornerShape(16.dp))
                                 .padding(16.dp)
                         ) {
                             Text(
                                 text = "$targetLanguage Goal Progress",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E293B)
+                                color = c.textPrimary
                             )
                             Spacer(modifier = Modifier.height(10.dp))
 
@@ -386,7 +388,7 @@ fun PathTab(
                                         modifier = Modifier
                                             .size(36.dp)
                                             .clip(CircleShape)
-                                            .background(Color(0xFFFEF3C7)),
+                                            .background(c.warningMuted),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text("🏆", fontSize = 18.sp)
@@ -397,12 +399,12 @@ fun PathTab(
                                             text = "$learnedCards of $totalCards mastered",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp,
-                                            color = Color(0xFF1E293B)
+                                            color = c.textPrimary
                                         )
                                         Text(
                                             text = "${matchingDecks.size} active target decks",
                                             fontSize = 11.sp,
-                                            color = Color(0xFF64748B)
+                                            color = c.textSecondary
                                         )
                                     }
                                 }
@@ -410,7 +412,7 @@ fun PathTab(
                                     text = "$masteryPercent%",
                                     fontWeight = FontWeight.Black,
                                     fontSize = 20.sp,
-                                    color = Color(0xFFD97706)
+                                    color = c.warning
                                 )
                             }
 
@@ -421,8 +423,8 @@ fun PathTab(
                                     .fillMaxWidth()
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(4.dp)),
-                                color = Color(0xFFD97706),
-                                trackColor = Color(0xFFFEF3C7)
+                                color = c.warning,
+                                trackColor = c.warningMuted
                             )
                         }
                     }
@@ -438,13 +440,13 @@ fun PathTab(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = c.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
+                                .border(1.dp, c.hairline, RoundedCornerShape(16.dp))
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
@@ -452,7 +454,7 @@ fun PathTab(
                                 text = "Weekly Quests & Challenges",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E293B)
+                                color = c.textPrimary
                             )
 
                             // Quest 1
@@ -462,7 +464,7 @@ fun PathTab(
                                 Text(
                                     text = "Maintain active daily study streak (🔥 $streakDays Days)",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF475569)
+                                    color = c.textSecondary
                                 )
                             }
 
@@ -474,7 +476,7 @@ fun PathTab(
                                     Text(
                                         text = "Reach 500 total study XP (Points: $totalXp / 500)",
                                         fontSize = 12.sp,
-                                        color = Color(0xFF475569)
+                                        color = c.textSecondary
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     LinearProgressIndicator(
@@ -497,7 +499,7 @@ fun PathTab(
                                     Text(
                                         text = "Unlock 3 mastered deck crowns (Crowns: $crownsCount / 3)",
                                         fontSize = 12.sp,
-                                        color = Color(0xFF475569)
+                                        color = c.textSecondary
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     LinearProgressIndicator(
@@ -506,8 +508,8 @@ fun PathTab(
                                             .width(150.dp)
                                             .height(4.dp)
                                             .clip(RoundedCornerShape(2.dp)),
-                                        color = Color(0xFFF59E0B),
-                                        trackColor = Color(0xFFFEF3C7)
+                                        color = c.warning,
+                                        trackColor = c.warningMuted
                                     )
                                 }
                             }
@@ -521,7 +523,7 @@ fun PathTab(
                         text = "Active Quest Decks for $targetLanguage",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B),
+                        color = c.textPrimary,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                     )
                 }
@@ -533,12 +535,12 @@ fun PathTab(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp),
                             shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC))
+                            colors = CardDefaults.cardColors(containerColor = c.surfaceMuted)
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
+                                    .border(1.dp, c.hairline, RoundedCornerShape(16.dp))
                                     .padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
@@ -549,13 +551,13 @@ fun PathTab(
                                     text = "No Decks Match Your Goal",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = Color(0xFF475569)
+                                    color = c.textSecondary
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "We couldn't find any study materials configured for $targetLanguage in your library yet.",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF64748B),
+                                    color = c.textSecondary,
                                     textAlign = TextAlign.Center,
                                     lineHeight = 16.sp
                                 )
@@ -569,10 +571,10 @@ fun PathTab(
                                             density = "Balanced"
                                         )
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0054D1)),
+                                    colors = ButtonDefaults.buttonColors(containerColor = c.accent),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Text("AI Quest Generator: Seed Starter Deck", color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("AI Quest Generator: Seed Starter Deck", color = c.onAccent, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -592,13 +594,13 @@ fun PathTab(
                                 .testTag("path_node_${deck.id}")
                                 .clickable { selectedNodeDeck = deckWithCards },
                             shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = c.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
+                                    .border(1.dp, c.hairline, RoundedCornerShape(16.dp))
                                     .padding(14.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
@@ -622,13 +624,13 @@ fun PathTab(
                                             text = deck.name,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 14.sp,
-                                            color = Color(0xFF1E293B)
+                                            color = c.textPrimary
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = "$learned of $total words learned",
                                             fontSize = 11.sp,
-                                            color = Color(0xFF64748B)
+                                            color = c.textSecondary
                                         )
                                     }
                                 }
@@ -643,13 +645,13 @@ fun PathTab(
                                         modifier = Modifier.size(32.dp),
                                         color = style.textColor,
                                         strokeWidth = 3.dp,
-                                        trackColor = Color(0xFFF1F5F9)
+                                        trackColor = c.surfaceMuted
                                     )
 
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                         contentDescription = "Details",
-                                        tint = Color(0xFF94A3B8),
+                                        tint = c.textFaint,
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
@@ -682,7 +684,7 @@ fun PathTab(
             AlertDialog(
                 onDismissRequest = { selectedNodeDeck = null },
                 shape = RoundedCornerShape(24.dp),
-                containerColor = Color.White,
+                containerColor = c.surface,
                 icon = {
                     Box(
                         modifier = Modifier
@@ -700,7 +702,7 @@ fun PathTab(
                             text = deck.name,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E293B),
+                            color = c.textPrimary,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -717,13 +719,13 @@ fun PathTab(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                        HorizontalDivider(color = c.surfaceMuted, thickness = 1.dp)
 
                         // Clean visual tab selector mimicking modern web designs
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFFF1F5F9), RoundedCornerShape(8.dp))
+                                .background(c.surfaceMuted, RoundedCornerShape(8.dp))
                                 .padding(4.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
@@ -731,7 +733,7 @@ fun PathTab(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(if (activeViewTab == "stats") Color.White else Color.Transparent)
+                                    .background(if (activeViewTab == "stats") c.surface else Color.Transparent)
                                     .clickable { activeViewTab = "stats" }
                                     .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
@@ -740,14 +742,14 @@ fun PathTab(
                                     text = "Overview Stats",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (activeViewTab == "stats") Color(0xFF1E293B) else Color(0xFF64748B)
+                                    color = if (activeViewTab == "stats") c.textPrimary else c.textSecondary
                                 )
                             }
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(if (activeViewTab == "grid") Color.White else Color.Transparent)
+                                    .background(if (activeViewTab == "grid") c.surface else Color.Transparent)
                                     .clickable { activeViewTab = "grid" }
                                     .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
@@ -756,7 +758,7 @@ fun PathTab(
                                     text = "Vocabulary Grid",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (activeViewTab == "grid") Color(0xFF1E293B) else Color(0xFF64748B)
+                                    color = if (activeViewTab == "grid") c.textPrimary else c.textSecondary
                                 )
                             }
                         }
@@ -768,16 +770,16 @@ fun PathTab(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                                    Text(text = "$total", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
-                                    Text(text = "Total Words", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(text = "$total", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
+                                    Text(text = "Total Words", fontSize = 11.sp, color = c.textSecondary)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                                    Text(text = "$learned", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF16A34A))
-                                    Text(text = "Learned", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(text = "$learned", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = c.success)
+                                    Text(text = "Learned", fontSize = 11.sp, color = c.textSecondary)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                                    Text(text = "$reviewsDue", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = if (reviewsDue > 0) Color(0xFFD97706) else Color(0xFF94A3B8))
-                                    Text(text = "Due Now", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(text = "$reviewsDue", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = if (reviewsDue > 0) c.warning else c.textFaint)
+                                    Text(text = "Due Now", fontSize = 11.sp, color = c.textSecondary)
                                 }
                             }
 
@@ -786,15 +788,15 @@ fun PathTab(
                                 text = "Leitner Memory Boxes",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E293B)
+                                color = c.textPrimary
                             )
 
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                LeitnerBoxProgressRow(boxName = "Box 1: New / Unstudied", count = box1Count, total = total, color = Color(0xFF94A3B8))
+                                LeitnerBoxProgressRow(boxName = "Box 1: New / Unstudied", count = box1Count, total = total, color = c.textFaint)
                                 LeitnerBoxProgressRow(boxName = "Box 2: Fresh Review", count = box2Count, total = total, color = Color(0xFF60A5FA))
                                 LeitnerBoxProgressRow(boxName = "Box 3: Familiar", count = box3Count, total = total, color = Color(0xFF818CF8))
-                                LeitnerBoxProgressRow(boxName = "Box 4: Highly Retained", count = box4Count, total = total, color = Color(0xFFF59E0B))
-                                LeitnerBoxProgressRow(boxName = "Box 5: Mastered (Permanent)", count = box5Count, total = total, color = Color(0xFF10B981))
+                                LeitnerBoxProgressRow(boxName = "Box 4: Highly Retained", count = box4Count, total = total, color = c.warning)
+                                LeitnerBoxProgressRow(boxName = "Box 5: Mastered (Permanent)", count = box5Count, total = total, color = c.success)
                             }
                         } else {
                             // Responsive vocabulary cards grid with icons & live interactive 3D click flip
@@ -813,7 +815,7 @@ fun PathTab(
                             viewModel.selectDeck(deck)
                             selectedNodeDeck = null
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0054D1)),
+                        colors = ButtonDefaults.buttonColors(containerColor = c.accent),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -822,7 +824,7 @@ fun PathTab(
                     ) {
                         Text(
                             text = if (reviewsDue > 0) "Study & Review ($reviewsDue Due)" else "Study Deck / Start Quiz",
-                            color = Color.White,
+                            color = c.onAccent,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -832,7 +834,7 @@ fun PathTab(
                         onClick = { selectedNodeDeck = null },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Close Map details", color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
+                        Text("Close Map details", color = c.textSecondary, fontWeight = FontWeight.Bold)
                     }
                 }
             )
@@ -848,6 +850,7 @@ fun LeitnerBoxProgressRow(
     total: Int,
     color: Color
 ) {
+    val c = AppTheme.colors
     val progress = if (total > 0) count.toFloat() / total else 0f
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -855,8 +858,8 @@ fun LeitnerBoxProgressRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(boxName, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF475569))
-            Text("$count words", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color(0xFF1E293B))
+            Text(boxName, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = c.textSecondary)
+            Text("$count words", fontSize = 10.sp, fontWeight = FontWeight.Black, color = c.textPrimary)
         }
         Spacer(modifier = Modifier.height(3.dp))
         LinearProgressIndicator(
@@ -866,7 +869,7 @@ fun LeitnerBoxProgressRow(
                 .height(5.dp)
                 .clip(CircleShape),
             color = color,
-            trackColor = Color(0xFFF1F5F9)
+            trackColor = c.surfaceMuted
         )
     }
 }
@@ -877,6 +880,7 @@ fun ResponsiveVocabularyGrid(
     cards: List<Flashcard>,
     modifier: Modifier = Modifier
 ) {
+    val c = AppTheme.colors
     // State collection managing individual card flips
     var flippedCardIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
 
@@ -916,9 +920,9 @@ fun ResponsiveVocabularyGrid(
                         }
                     },
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isFlipped) Color(0xFFF8FAFC) else Color(0xFFEFF6FF)
+                    containerColor = if (isFlipped) c.surfaceMuted else c.accentMuted
                 ),
-                border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                border = BorderStroke(1.dp, c.hairline),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Box(
@@ -935,20 +939,20 @@ fun ResponsiveVocabularyGrid(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0x150054D1)),
+                                    .background(c.accentMuted),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = getIconForCard(card),
                                     contentDescription = "Concept Icon",
-                                    tint = Color(0xFF0054D1),
+                                    tint = c.accent,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = card.front,
-                                color = Color(0xFF1E293B),
+                                color = c.textPrimary,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
@@ -966,13 +970,13 @@ fun ResponsiveVocabularyGrid(
                             Icon(
                                 imageVector = getIconForCard(card),
                                 contentDescription = "Concept Icon Back",
-                                tint = Color(0xFF10B981).copy(alpha = 0.6f),
+                                tint = c.success.copy(alpha = 0.6f),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = card.back,
-                                color = Color(0xFF10B981),
+                                color = c.success,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 textAlign = TextAlign.Center,
@@ -982,7 +986,7 @@ fun ResponsiveVocabularyGrid(
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "TAP TO FLIP",
-                                color = Color(0xFF94A3B8),
+                                color = c.textFaint,
                                 fontSize = 8.sp,
                                 fontWeight = FontWeight.Bold
                             )

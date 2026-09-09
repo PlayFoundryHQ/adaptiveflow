@@ -11,7 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
  * Master switch for dark mode. Flipped to `true` once every screen reads
  * [AppTheme.colors] instead of hard-coded hex — until then a system dark theme
  * would leave un-migrated screens with dark text on a dark background.
- * Migration progress: MainActivity nav + DecksScreen done.
+ * Migration progress: MainActivity nav, Decks, Quest, Guide done.
  */
 const val DARK_MODE_ENABLED = false
 
