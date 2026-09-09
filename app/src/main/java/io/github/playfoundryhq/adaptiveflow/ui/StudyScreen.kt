@@ -2,7 +2,6 @@ package io.github.playfoundryhq.adaptiveflow.ui
 
 import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -112,9 +111,9 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
             runCatching {
                 context.contentResolver.openOutputStream(uri)?.use { it.write(payload.second.toByteArray()) }
             }.onSuccess {
-                Toast.makeText(context, "Deck exported", Toast.LENGTH_SHORT).show()
+                AppSnackbar.show("Deck exported")
             }.onFailure {
-                Toast.makeText(context, "Export failed: ${it.message}", Toast.LENGTH_LONG).show()
+                AppSnackbar.show("Export failed: ${it.message}")
             }
         }
     }
@@ -124,7 +123,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
         scope.launch {
             val content = viewModel.buildDeckExport(format)
             if (content == null) {
-                Toast.makeText(context, "Nothing to export — this deck has no cards yet.", Toast.LENGTH_SHORT).show()
+                AppSnackbar.show("Nothing to export — this deck has no cards yet.")
                 return@launch
             }
             pendingExport = format to content
@@ -427,11 +426,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     } else {
                         IconButton(
                             onClick = {
-                                Toast.makeText(
-                                    context,
-                                    "This is your protected Master Vocabulary Pool and can't be deleted.",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                AppSnackbar.show("This is your protected Master Vocabulary Pool and can't be deleted.")
                             }
                         ) {
                             Icon(
@@ -583,11 +578,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     } else {
                         IconButton(
                             onClick = {
-                                Toast.makeText(
-                                    context,
-                                    "This is your protected Master Vocabulary Pool and can't be deleted.",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                AppSnackbar.show("This is your protected Master Vocabulary Pool and can't be deleted.")
                             }
                         ) {
                             Icon(

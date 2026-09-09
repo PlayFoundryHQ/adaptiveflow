@@ -25,6 +25,18 @@ Keys are stored in `EncryptedSharedPreferences` on-device and are excluded from
 cloud backup. Without a key, AI import and the tutor are off — you can still
 import a plain `word: meaning` list offline.
 
+### What leaves the device
+
+When a key is set, AdaptiveFlow sends **only** the content you actively import
+(pasted text, PDF/file text, the topic hint) and your **tutor chat messages**
+directly to the chosen provider over HTTPS, for that request. It goes under
+[Google's](https://ai.google.dev/gemini-api/terms) /
+[DeepSeek's](https://platform.deepseek.com/) API terms. AdaptiveFlow has no
+backend — nothing is sent anywhere else, and there is no analytics or
+telemetry. Decks, cards, SRS progress and chat history stay in the local Room
+database (which Android's own auto-backup may sync to the user's Google account
+unless they disable it).
+
 ## Build
 
 **Requirements:** JDK 17, Android SDK (`compileSdk 36.1`).

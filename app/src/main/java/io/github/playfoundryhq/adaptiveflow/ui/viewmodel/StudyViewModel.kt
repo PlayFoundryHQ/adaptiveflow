@@ -25,6 +25,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.data.pdf.PdfTextExtractor
 import io.github.playfoundryhq.adaptiveflow.data.repository.StudyRepository
 import io.github.playfoundryhq.adaptiveflow.data.settings.SettingsStore
+import io.github.playfoundryhq.adaptiveflow.domain.DeckMerge
 import io.github.playfoundryhq.adaptiveflow.domain.SrsScheduler
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger as Log
 import kotlinx.coroutines.Dispatchers
@@ -127,9 +128,31 @@ class StudyViewModel(
     sealed interface ImportState {
         data object Idle : ImportState
         data class Loading(val message: String = "Working…") : ImportState
-        data class Success(val deckName: String) : ImportState
+        /** A merge is staged and waiting for the user to confirm. */
+        data class MergePreview(val plan: MergePlan) : ImportState
+        data class Success(val deckName: String, val undoable: Boolean = false) : ImportState
         data class Error(val message: String) : ImportState
     }
+
+    data class MergePlan(
+        val targetDeckName: String,
+        val newCount: Int,
+        val enrichCount: Int,
+        val skipCount: Int,
+    ) {
+        val total get() = newCount + enrichCount + skipCount
+    }
+
+    private class PendingMerge(val deck: Deck, val plan: DeckMerge.Plan)
+
+    private class ImportUndo(
+        val insertedCardIds: List<Int>,
+        /** card id → its notes before enrichment. */
+        val restoredNotes: List<Pair<Int, String?>>,
+    )
+
+    private var pendingMerge: PendingMerge? = null
+    private var lastUndo: ImportUndo? = null
 
     // ---- AI provider + keys ----
     private val _aiProviderId = MutableStateFlow(settings.providerId)
@@ -626,44 +649,74 @@ class StudyViewModel(
 
     // ---- save / merge ----
 
+    /**
+     * A brand-new deck writes straight away. A merge into an existing deck is
+     * *staged* — [ImportState.MergePreview] shows the user what will change and
+     * [confirmMerge] / [cancelMerge] decide. Merges are undoable via
+     * [undoLastImport]. Merge math lives in [DeckMerge].
+     */
     private suspend fun saveOrMergeCards(
         targetDeckId: Int?,
         deckName: String,
         sourceLanguage: String?,
         targetLanguage: String?,
         parsedCards: List<ParsedCard>,
-    ): String {
-        fun norm(s: String) = s.lowercase().trim()
-            .replace(Regex("[\\p{Punct}]"), "").replace(Regex("\\s+"), " ")
-
+    ): ImportState {
         val existingDeck = targetDeckId?.let { repository.getDeckById(it) }
         if (existingDeck != null) {
             val existingCards = repository.getFlashcardsForDeck(existingDeck.id)
-            for (incoming in parsedCards) {
-                val match = existingCards.find { norm(it.front) == norm(incoming.front) }
-                if (match == null) {
-                    repository.insertFlashcard(Flashcard(deckId = existingDeck.id, front = incoming.front, back = incoming.back, notes = incoming.notes))
-                } else {
-                    val currentNotes = match.notes ?: ""
-                    val enrichment = buildString {
-                        if (incoming.back.isNotBlank() && !norm(match.back).contains(norm(incoming.back)))
-                            append("\n• Alt: ${incoming.back}")
-                        val n = incoming.notes ?: ""
-                        if (n.isNotBlank() && !currentNotes.contains(n)) append("\n• $n")
-                    }.trim()
-                    if (enrichment.isNotEmpty()) {
-                        repository.updateFlashcard(match.copy(
-                            notes = if (currentNotes.isBlank()) enrichment else "$currentNotes\n$enrichment"
-                        ))
-                    }
-                }
-            }
-            return existingDeck.name
+            val plan = DeckMerge.plan(
+                existingCards,
+                parsedCards.map { Triple(it.front, it.back, it.notes) },
+            )
+            pendingMerge = PendingMerge(existingDeck, plan)
+            return ImportState.MergePreview(
+                MergePlan(existingDeck.name, plan.toInsert.size, plan.toEnrich.size, plan.skipCount)
+            )
         }
 
         val newDeckId = repository.insertDeck(Deck(name = deckName, sourceLanguage = sourceLanguage, targetLanguage = targetLanguage)).toInt()
         repository.insertFlashcards(parsedCards.map { Flashcard(deckId = newDeckId, front = it.front, back = it.back, notes = it.notes) })
-        return deckName
+        lastUndo = null
+        return ImportState.Success(deckName)
+    }
+
+    fun confirmMerge() {
+        val p = pendingMerge ?: return
+        pendingMerge = null
+        _importState.value = ImportState.Loading("Merging into ${p.deck.name}…")
+        viewModelScope.launch {
+            val insertedIds = p.plan.toInsert.map {
+                repository.insertFlashcard(
+                    Flashcard(deckId = p.deck.id, front = it.front, back = it.back, notes = it.notes)
+                ).toInt()
+            }
+            val restored = p.plan.toEnrich.map { e ->
+                repository.updateFlashcard(e.card.copy(notes = e.mergedNotes))
+                e.card.id to e.card.notes
+            }
+            lastUndo = ImportUndo(insertedIds, restored)
+            _importState.value = ImportState.Success(p.deck.name, undoable = true)
+        }
+    }
+
+    fun cancelMerge() {
+        pendingMerge = null
+        _importState.value = ImportState.Idle
+    }
+
+    fun undoLastImport() {
+        val u = lastUndo ?: return
+        lastUndo = null
+        viewModelScope.launch {
+            u.insertedCardIds.forEach { id ->
+                repository.getFlashcardById(id)?.let { repository.deleteFlashcard(it) }
+            }
+            u.restoredNotes.forEach { (id, notes) ->
+                repository.getFlashcardById(id)?.let { repository.updateFlashcard(it.copy(notes = notes)) }
+            }
+            _importState.value = ImportState.Idle
+        }
     }
 
     // ---- honest offline "word: meaning" list parsing ----
@@ -768,8 +821,7 @@ class StudyViewModel(
                     runCatching { moshi.adapter(ParsedDeck::class.java).fromJson(cleaned) }
                         .getOrNull()?.takeIf { it.cards.isNotEmpty() }?.let { deck ->
                             setImportMessage("JSON deck detected — importing offline…")
-                            val name = saveOrMergeCards(mergeDeckId, deck.deckName.ifBlank { "📋 Imported deck" }, deck.sourceLanguage, deck.targetLanguage, deck.cards)
-                            _importState.value = ImportState.Success(name)
+                            _importState.value = saveOrMergeCards(mergeDeckId, deck.deckName.ifBlank { "📋 Imported deck" }, deck.sourceLanguage, deck.targetLanguage, deck.cards)
                             return@launch
                         }
                 }
@@ -778,8 +830,7 @@ class StudyViewModel(
                 if (input.isNotEmpty() && fileUri == null && !isYouTubeUrl(input)) {
                     parseRawTextLocally(input, topicHint)?.let { local ->
                         setImportMessage("Importing list offline…")
-                        val name = saveOrMergeCards(mergeDeckId, local.deckName, local.sourceLanguage, local.targetLanguage, local.cards)
-                        _importState.value = ImportState.Success(name)
+                        _importState.value = saveOrMergeCards(mergeDeckId, local.deckName, local.sourceLanguage, local.targetLanguage, local.cards)
                         return@launch
                     }
                 }
@@ -858,8 +909,7 @@ class StudyViewModel(
                         cards += result.cards
                     }
                     if (cards.isEmpty()) throw Exception("No flashcards could be extracted from the PDF.")
-                    val name = saveOrMergeCards(mergeDeckId, deckName, srcLang, tgtLang, filterOutUrlEchoCards(cards))
-                    _importState.value = ImportState.Success(name)
+                    _importState.value = saveOrMergeCards(mergeDeckId, deckName, srcLang, tgtLang, filterOutUrlEchoCards(cards))
                     return@launch
                 }
 
@@ -878,12 +928,11 @@ class StudyViewModel(
                     )
                     return@launch
                 }
-                val name = saveOrMergeCards(
+                _importState.value = saveOrMergeCards(
                     mergeDeckId,
                     parsed.deckName.ifBlank { "📄 " + topicHint.ifBlank { "Import" } },
                     parsed.sourceLanguage, parsed.targetLanguage, realCards,
                 )
-                _importState.value = ImportState.Success(name)
             } catch (e: AiException) {
                 Log.e("StudyViewModel", "import AI error (${e.kind})", e)
                 _importState.value = ImportState.Error(friendlyAiError(e))
