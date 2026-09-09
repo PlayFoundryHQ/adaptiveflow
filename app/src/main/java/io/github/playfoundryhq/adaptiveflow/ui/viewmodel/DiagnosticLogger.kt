@@ -84,6 +84,9 @@ object DiagnosticLogger {
     }
 
     fun getLogcatLogs(): List<String> {
+        if (!io.github.playfoundryhq.adaptiveflow.BuildConfig.DEBUG) {
+            return listOf("System logcat is only available in debug builds. Use the in-app log tab.")
+        }
         return try {
             val process = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-v", "time", "*:I"))
             val reader = process.inputStream.bufferedReader()
