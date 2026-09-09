@@ -67,4 +67,14 @@ interface StudyDao {
 
     @Query("DELETE FROM chat_logs WHERE deckId = :deckId")
     suspend fun clearChatLogsForDeck(deckId: Int)
+
+    // --- Progress (single row, id = 0) ---
+    @Query("SELECT * FROM progress WHERE id = 0")
+    fun progressFlow(): Flow<io.github.playfoundryhq.adaptiveflow.data.model.Progress?>
+
+    @Query("SELECT * FROM progress WHERE id = 0")
+    suspend fun getProgress(): io.github.playfoundryhq.adaptiveflow.data.model.Progress?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertProgress(progress: io.github.playfoundryhq.adaptiveflow.data.model.Progress)
 }

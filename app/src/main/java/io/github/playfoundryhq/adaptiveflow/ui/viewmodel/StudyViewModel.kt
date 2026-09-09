@@ -2,29 +2,32 @@ package io.github.playfoundryhq.adaptiveflow.ui.viewmodel
 
 import android.app.Application
 import android.content.Context
-import android.speech.tts.TextToSpeech
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import io.github.playfoundryhq.adaptiveflow.AdaptiveFlowApp
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.github.playfoundryhq.adaptiveflow.ai.Prompts
-import io.github.playfoundryhq.adaptiveflow.data.ai.AiClient
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiException
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiProvider
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiProviderId
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiTurn
 import io.github.playfoundryhq.adaptiveflow.data.backup.DeckExporter
-import io.github.playfoundryhq.adaptiveflow.data.database.AppDatabase
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.DeckWithCards
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
+import io.github.playfoundryhq.adaptiveflow.data.model.Progress
 import io.github.playfoundryhq.adaptiveflow.data.pdf.PdfTextExtractor
-import io.github.playfoundryhq.adaptiveflow.data.repository.StudyRepository
-import io.github.playfoundryhq.adaptiveflow.data.settings.SettingsStore
+import io.github.playfoundryhq.adaptiveflow.di.AppContainer
 import io.github.playfoundryhq.adaptiveflow.domain.DeckMerge
 import io.github.playfoundryhq.adaptiveflow.domain.SrsScheduler
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger as Log
@@ -59,11 +62,13 @@ private const val KEY_ACTIVE_DECK = "activeDeckId"
 class StudyViewModel(
     application: Application,
     private val savedState: SavedStateHandle,
+    private val container: AppContainer,
 ) : AndroidViewModel(application) {
 
-    private val repository: StudyRepository
-    private val settings = SettingsStore(application)
-    private val aiClient = AiClient()
+    private val repository = container.repository
+    private val settings = container.settings
+    private val aiClient = container.aiClient
+    private val tts = container.tts
     private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 
     // ---- DB-backed state ----
@@ -104,16 +109,12 @@ class StudyViewModel(
     private val _flippedCardIds = MutableStateFlow<Set<Int>>(emptySet())
     val flippedCardIds: StateFlow<Set<Int>> = _flippedCardIds.asStateFlow()
 
-    // ---- TTS ----
-    private var tts: TextToSpeech? = null
-    private val _isTtsReady = MutableStateFlow(false)
-    val isTtsReady: StateFlow<Boolean> = _isTtsReady.asStateFlow()
-
-    private val _ttsRate = MutableStateFlow(settings.ttsRate)
-    val ttsRate: StateFlow<Float> = _ttsRate.asStateFlow()
-
-    private val _isAutoPlayTtsEnabled = MutableStateFlow(settings.ttsAutoPlay)
-    val isAutoPlayTtsEnabled: StateFlow<Boolean> = _isAutoPlayTtsEnabled.asStateFlow()
+    // ---- TTS (owned by the app-scoped TtsController) ----
+    val isTtsReady: StateFlow<Boolean> = tts.isReady
+    val ttsRate: StateFlow<Float> = tts.rate
+    val isAutoPlayTtsEnabled: StateFlow<Boolean> = tts.autoPlay
+    val isSpeaking: StateFlow<Boolean> = tts.isSpeaking
+    val ttsMissingLanguage: StateFlow<java.util.Locale?> = tts.missingLanguage
 
     // ---- Play mode ----
     private val _isPlayModeActive = MutableStateFlow(false)
@@ -359,21 +360,26 @@ class StudyViewModel(
         throw Exception(lastError?.message ?: "Chunk $chunkLabel failed all attempts.")
     }
 
-    // ---- Gamification (interim SharedPreferences via SettingsStore) ----
+    // ---- Gamification (Room-backed since schema v2) ----
 
-    fun hasSeeded(): Boolean = settings.hasSeeded
-    fun getStreak(): Int = settings.streak
-    fun getXp(): Int = settings.xp
+    val progress: StateFlow<Progress> = repository.progressFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Progress())
 
-    private fun recordStudyActivity(isCorrect: Boolean) {
-        settings.xp += if (isCorrect) 15 else 5
+    private suspend fun recordStudyActivity(isCorrect: Boolean) {
         val today = dateString(0)
-        val last = settings.lastStudyDate
-        when {
-            last.isEmpty() -> { settings.streak = 1; settings.lastStudyDate = today }
-            last == today -> Unit
-            last == dateString(-1) -> { settings.streak += 1; settings.lastStudyDate = today }
-            else -> { settings.streak = 1; settings.lastStudyDate = today }
+        val yesterday = dateString(-1)
+        repository.updateProgress { p ->
+            val (streak, date) = when {
+                p.lastStudyDate.isEmpty() -> 1 to today
+                p.lastStudyDate == today -> p.streak to today
+                p.lastStudyDate == yesterday -> (p.streak + 1) to today
+                else -> 1 to today
+            }
+            p.copy(
+                xp = p.xp + if (isCorrect) 15 else 5,
+                streak = streak,
+                lastStudyDate = date,
+            )
         }
     }
 
@@ -385,28 +391,30 @@ class StudyViewModel(
     // ---- init ----
 
     init {
-        val database = AppDatabase.getDatabase(application)
-        repository = StudyRepository(database.studyDao())
-
         allDecks = repository.allDecksWithCardsFlow
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-        tts = TextToSpeech(application) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                _isTtsReady.value = true
-                tts?.setSpeechRate(_ttsRate.value)
-            }
-        }
-
-        // Seed the shared Master Vocabulary Pool exactly once (guarded by a
-        // persisted flag + name check — no insert-inside-collect race).
         viewModelScope.launch {
-            if (!settings.hasSeeded) {
+            // One-shot: lift pre-v2 gamification counters out of SharedPreferences.
+            if (!settings.progressMigratedToRoom) {
+                repository.updateProgress {
+                    it.copy(
+                        xp = maxOf(it.xp, settings.xp),
+                        streak = maxOf(it.streak, settings.streak),
+                        lastStudyDate = it.lastStudyDate.ifEmpty { settings.lastStudyDate },
+                        seeded = it.seeded || settings.hasSeeded,
+                    )
+                }
+                settings.progressMigratedToRoom = true
+            }
+
+            // Seed the shared Master Vocabulary Pool exactly once.
+            if (!repository.getProgress().seeded) {
                 val exists = repository.allDecksFlowSnapshot().any { it.name == MASTER_POOL_NAME }
                 if (!exists) {
                     repository.insertDeck(Deck(name = MASTER_POOL_NAME, sourceLanguage = "Multiple", targetLanguage = "English"))
                 }
-                settings.hasSeeded = true
+                repository.updateProgress { it.copy(seeded = true) }
             }
         }
 
@@ -528,75 +536,19 @@ class StudyViewModel(
         _currentCardIndex.value = if (sorted.isEmpty()) 0 else index % sorted.size
     }
 
-    // ---- TTS ----
+    // ---- TTS (delegates to the app-scoped TtsController) ----
 
-    private fun cleanTextForTts(text: String, locale: Locale): String {
-        var s = text
-            .replace(Regex("\\([^)]*\\)"), "")
-            .replace(Regex("\\[[^]]*\\]"), "")
-            .replace(Regex("\\{[^}]*\\}"), "")
-        if (s.contains("/")) s = s.substringBefore("/")
-        if (s.contains(":")) s = s.substringBefore(":")
-        val nonLatin = locale.language in setOf("fa", "ar", "ja", "zh", "ko", "hi", "he", "el", "ru", "uk", "bg")
-        if (nonLatin) s = s.replace(Regex("[a-zA-Z]"), "")
-        return s.trim()
-    }
+    /** Bind the TTS engine — call when a study session opens, not at startup. */
+    fun prepareTts() = tts.prepare()
 
-    fun speak(text: String, languageCode: String? = null) {
-        if (!_isTtsReady.value) return
-        viewModelScope.launch(Dispatchers.Main) {
-            val locale = if (!languageCode.isNullOrBlank()) Locale.forLanguageTag(languageCode)
-            else localeFromLanguageName(_currentDeck.value?.sourceLanguage ?: "en")
-            runCatching {
-                val cleaned = cleanTextForTts(text, locale)
-                if (cleaned.isNotBlank()) {
-                    tts?.language = locale
-                    tts?.speak(cleaned, TextToSpeech.QUEUE_FLUSH, null, "af-utterance")
-                }
-            }.onFailure { Log.e("StudyViewModel", "TTS error", it) }
-        }
-    }
+    fun speak(text: String, languageCode: String? = null) =
+        tts.speak(text, languageCode, _currentDeck.value?.sourceLanguage)
 
-    /** Non-deprecated replacement for `Locale(lang)` / `Locale(lang, region)`. */
-    private fun locale(language: String, region: String? = null): Locale =
-        Locale.Builder().setLanguage(language).apply { region?.let { setRegion(it) } }.build()
+    fun setTtsRate(rate: Float) = tts.setRate(rate)
 
-    private fun localeFromLanguageName(name: String): Locale {
-        val t = name.lowercase(Locale.ROOT).trim()
-        if (t.length == 2) return locale(t)
-        return when (t) {
-            "persian", "farsi" -> locale("fa")
-            "spanish" -> locale("es", "ES")
-            "french" -> Locale.FRENCH
-            "german" -> Locale.GERMAN
-            "swedish" -> locale("sv", "SE")
-            "italian" -> Locale.ITALIAN
-            "japanese" -> Locale.JAPANESE
-            "korean" -> Locale.KOREAN
-            "chinese" -> Locale.CHINESE
-            "english" -> Locale.ENGLISH
-            "arabic" -> locale("ar")
-            "portuguese" -> locale("pt", "PT")
-            "russian" -> locale("ru")
-            "hindi" -> locale("hi")
-            "turkish" -> locale("tr")
-            "dutch" -> locale("nl", "NL")
-            else -> Locale.getAvailableLocales().firstOrNull {
-                it.displayLanguage.lowercase(Locale.ROOT) == t || it.language.lowercase(Locale.ROOT) == t
-            } ?: Locale.getDefault()
-        }
-    }
+    fun toggleAutoPlayTts(enabled: Boolean) = tts.setAutoPlay(enabled)
 
-    fun setTtsRate(rate: Float) {
-        _ttsRate.value = rate
-        settings.ttsRate = rate
-        tts?.setSpeechRate(rate)
-    }
-
-    fun toggleAutoPlayTts(enabled: Boolean) {
-        _isAutoPlayTtsEnabled.value = enabled
-        settings.ttsAutoPlay = enabled
-    }
+    fun stopSpeaking() = tts.stop()
 
     fun togglePlayMode(active: Boolean) { _isPlayModeActive.value = active }
 
@@ -662,7 +614,13 @@ class StudyViewModel(
         targetLanguage: String?,
         parsedCards: List<ParsedCard>,
     ): ImportState {
+        // The Master Vocabulary Pool is a singleton — an import that names it
+        // (e.g. re-importing an export of it) merges rather than making a second,
+        // undeletable copy.
         val existingDeck = targetDeckId?.let { repository.getDeckById(it) }
+            ?: if (deckName == MASTER_POOL_NAME) {
+                repository.allDecksFlowSnapshot().firstOrNull { it.name == MASTER_POOL_NAME }
+            } else null
         if (existingDeck != null) {
             val existingCards = repository.getFlashcardsForDeck(existingDeck.id)
             val plan = DeckMerge.plan(
@@ -1007,7 +965,15 @@ class StudyViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        tts?.stop()
-        tts?.shutdown()
+        tts.stop() // the controller is app-scoped; just stop any in-flight utterance
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[APPLICATION_KEY] as AdaptiveFlowApp
+                StudyViewModel(app, createSavedStateHandle(), app.container)
+            }
+        }
     }
 }

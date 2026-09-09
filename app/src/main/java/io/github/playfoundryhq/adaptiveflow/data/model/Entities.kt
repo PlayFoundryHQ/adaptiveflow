@@ -67,3 +67,17 @@ data class DeckWithCards(
     )
     val flashcards: List<Flashcard>
 )
+
+/**
+ * Single-row table (`id` is always 0) holding gamification + one-time-setup
+ * state. Was in SharedPreferences; moved to Room in schema v2 so XP / streak
+ * updates are transactional with the study writes that trigger them.
+ */
+@Entity(tableName = "progress")
+data class Progress(
+    @PrimaryKey val id: Int = 0,
+    val xp: Int = 0,
+    val streak: Int = 0,
+    val lastStudyDate: String = "",
+    val seeded: Boolean = false,
+)

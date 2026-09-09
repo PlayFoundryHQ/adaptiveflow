@@ -81,6 +81,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun StudySessionScreen(viewModel: StudyViewModel) {
     val c = AppTheme.colors
+    LaunchedEffect(Unit) { viewModel.prepareTts() }
     val context = LocalContext.current
     val deck by viewModel.currentDeck.collectAsStateWithLifecycle()
     val cards by viewModel.currentFlashcards.collectAsStateWithLifecycle()
@@ -1065,6 +1066,34 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             checkedTrackColor = c.accent
                         )
                     )
+                }
+
+                // TTS voice-data hint
+                val missingLang by viewModel.ttsMissingLanguage.collectAsStateWithLifecycle()
+                missingLang?.let { locale ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(c.warningMuted)
+                            .clickable {
+                                runCatching {
+                                    context.startActivity(
+                                        android.content.Intent(android.speech.tts.TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+                                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    )
+                                }
+                            }
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Default.RecordVoiceOver, contentDescription = null, tint = c.warning, modifier = Modifier.size(18.dp))
+                        Text(
+                            "No offline voice for ${locale.displayLanguage}. Tap to install it.",
+                            color = c.warning, fontSize = 12.sp, fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
 
                 // Auto-Play Pronunciation

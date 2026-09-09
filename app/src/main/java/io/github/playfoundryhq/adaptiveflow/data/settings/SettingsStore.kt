@@ -83,23 +83,17 @@ class SettingsStore(context: Context) {
         get() = plain.getBoolean(KEY_TTS_AUTOPLAY, true)
         set(value) = plain.edit().putBoolean(KEY_TTS_AUTOPLAY, value).apply()
 
-    // ---- Gamification (interim — moves to Room) ----
+    // ---- Gamification (legacy — read once, then migrated to the Room `progress` table) ----
 
-    var hasSeeded: Boolean
-        get() = plain.getBoolean(KEY_HAS_SEEDED, false)
-        set(value) = plain.edit().putBoolean(KEY_HAS_SEEDED, value).apply()
+    val hasSeeded: Boolean get() = plain.getBoolean(KEY_HAS_SEEDED, false)
+    val xp: Int get() = plain.getInt(KEY_XP, 0)
+    val streak: Int get() = plain.getInt(KEY_STREAK, 0)
+    val lastStudyDate: String get() = plain.getString(KEY_LAST_STUDY_DATE, "") ?: ""
 
-    var xp: Int
-        get() = plain.getInt(KEY_XP, 0)
-        set(value) = plain.edit().putInt(KEY_XP, value).apply()
-
-    var streak: Int
-        get() = plain.getInt(KEY_STREAK, 0)
-        set(value) = plain.edit().putInt(KEY_STREAK, value).apply()
-
-    var lastStudyDate: String
-        get() = plain.getString(KEY_LAST_STUDY_DATE, "") ?: ""
-        set(value) = plain.edit().putString(KEY_LAST_STUDY_DATE, value).apply()
+    /** True once [StudyViewModel] has copied the four values above into Room. */
+    var progressMigratedToRoom: Boolean
+        get() = plain.getBoolean(KEY_PROGRESS_MIGRATED, false)
+        set(value) = plain.edit().putBoolean(KEY_PROGRESS_MIGRATED, value).apply()
 
     private companion object {
         const val KEY_PROVIDER = "ai_provider"
@@ -111,5 +105,6 @@ class SettingsStore(context: Context) {
         const val KEY_XP = "gamified_xp"
         const val KEY_STREAK = "study_streak"
         const val KEY_LAST_STUDY_DATE = "last_study_date"
+        const val KEY_PROGRESS_MIGRATED = "progress_migrated_to_room"
     }
 }
