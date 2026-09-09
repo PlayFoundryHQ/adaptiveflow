@@ -565,6 +565,21 @@ Instrumented / Robolectric:
 **Docs**
 - ✅ `CLAUDE.md` (invariants), `docs/architecture/overview.md`, README rewritten.
 
+### 2026-09-09 — PR #2 `refactor/split-ui-and-save-state` (merged, v0.1.1)
+
+- **A1** — `MainActivity.kt` **5,258 -> 249 lines**. 7 new `ui/*.kt` files, one
+  per feature (Tutorial / Decks / Import / Study / TutorSheet / Quest /
+  SettingsDialogs). Pure move, no logic change. All in package `…ui` so they
+  see each other with no cross-imports.
+- **A5 / U4 (partial)** — `rememberSaveable` for `activeTab` (no more
+  bounce-to-Decks on rotate), the Import screen's text inputs + choices, and
+  the Study screen's sheet/drawer flags.
+- **A9** — `DiagnosticLogger.getLogcatLogs()` is a no-op outside debug.
+- Still large single features: `ImportScreen` ~1.4k, `StudyScreen` ~1.5k — break
+  their sub-components out in Phase 3.
+- Kotlin unused-import warnings in the new files (superset import blocks) —
+  spotless/ktlint pass will strip them.
+
 ### Deferred to the next PR (Phase 2 — architecture)
 `MainActivity.kt` split · DI · `navigation-compose` + back stack · `rememberSaveable`
 / `SavedStateHandle` everywhere · gamification → Room · `Int`→`Long` PKs (D3) ·
