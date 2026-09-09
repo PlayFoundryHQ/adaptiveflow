@@ -8,12 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
 /**
- * Master switch for dark mode. Flipped to `true` once every screen reads
- * [AppTheme.colors] instead of hard-coded hex — until then a system dark theme
- * would leave un-migrated screens with dark text on a dark background.
- * Migration progress: nav, Decks, Quest, Guide, Import, Study done. Dialogs/sheets next.
+ * Dark mode. Every screen and dialog reads [AppTheme.colors] rather than
+ * hard-coded hex, so the app follows the system light/dark setting.
+ * A handful of deliberately mode-independent surfaces stay literal: the
+ * onboarding hero photo overlay, the diagnostics log console, and a few
+ * decorative accent palettes (per-language deck styles, the purple
+ * "external AI helper" panel).
  */
-const val DARK_MODE_ENABLED = false
+const val DARK_MODE_ENABLED = true
 
 /**
  * AdaptiveFlow has a deliberate brand palette, so Material You dynamic colour is

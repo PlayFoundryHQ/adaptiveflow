@@ -71,6 +71,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import java.io.File
 import java.io.FileOutputStream
@@ -82,6 +83,7 @@ fun AiTutorBottomSheet(
     viewModel: StudyViewModel,
     onClose: () -> Unit
 ) {
+    val c = AppTheme.colors
     val chatLogs by viewModel.chatLogs.collectAsStateWithLifecycle()
     val isAiLoading by viewModel.isAiLoading.collectAsStateWithLifecycle()
     val currentCards by viewModel.currentFlashcards.collectAsStateWithLifecycle()
@@ -96,25 +98,25 @@ fun AiTutorBottomSheet(
         AlertDialog(
             onDismissRequest = { showClearChatConfirmation = false },
             shape = RoundedCornerShape(24.dp),
-            containerColor = Color.White,
+            containerColor = c.surface,
             icon = {
                 Icon(
                     imageVector = Icons.Default.DeleteSweep,
                     contentDescription = null,
-                    tint = Color(0xFFEF4444)
+                    tint = c.danger
                 )
             },
             title = {
                 Text(
                     text = "Clear tutor chat history?",
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B)
+                    color = c.textPrimary
                 )
             },
             text = {
                 Text(
                     text = "This permanently deletes this conversation with the AI Tutor. This cannot be undone.",
-                    color = Color(0xFF64748B)
+                    color = c.textSecondary
                 )
             },
             confirmButton = {
@@ -122,12 +124,12 @@ fun AiTutorBottomSheet(
                     showClearChatConfirmation = false
                     viewModel.clearChatHistory()
                 }) {
-                    Text("Clear", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+                    Text("Clear", color = c.danger, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearChatConfirmation = false }) {
-                    Text("Cancel", color = Color(0xFF64748B))
+                    Text("Cancel", color = c.textSecondary)
                 }
             }
         )
@@ -154,26 +156,26 @@ fun AiTutorBottomSheet(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFEFF6FF)),
+                        .background(c.accentMuted),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Psychology,
                         contentDescription = null,
-                        tint = Color(0xFF0054D1),
+                        tint = c.accent,
                         modifier = Modifier.size(22.dp)
                     )
                 }
                 Column {
                     Text(
                         text = "AI Adaptive Tutor",
-                        color = Color(0xFF1E293B),
+                        color = c.textPrimary,
                         fontWeight = FontWeight.Black,
                         fontSize = 16.sp
                     )
                     Text(
                         text = "Real-time semantic guidance",
-                        color = Color(0xFF64748B),
+                        color = c.textSecondary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -185,20 +187,20 @@ fun AiTutorBottomSheet(
                     Icon(
                         imageVector = Icons.Default.DeleteSweep,
                         contentDescription = "Clear Chat",
-                        tint = Color(0xFF64748B)
+                        tint = c.textSecondary
                     )
                 }
                 IconButton(onClick = onClose) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = Color(0xFF1E293B)
+                        tint = c.textPrimary
                     )
                 }
             }
         }
 
-        HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 1.dp)
+        HorizontalDivider(color = c.hairline, thickness = 1.dp)
 
         // Chats History
         LazyColumn(
@@ -222,26 +224,26 @@ fun AiTutorBottomSheet(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFEFF6FF)),
+                                .background(c.accentMuted),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.SupportAgent,
                                 contentDescription = null,
-                                tint = Color(0xFF0054D1),
+                                tint = c.accent,
                                 modifier = Modifier.size(36.dp)
                             )
                         }
                         Text(
                             text = "How can I support your study today?",
-                            color = Color(0xFF1E293B),
+                            color = c.textPrimary,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
                         Text(
                             text = "Ask for pronunciation, custom example sentences, or cultural origin hints in any language!",
-                            color = Color(0xFF64748B),
+                            color = c.textSecondary,
                             fontSize = 12.sp,
                             textAlign = TextAlign.Center,
                             lineHeight = 18.sp,
@@ -260,19 +262,19 @@ fun AiTutorBottomSheet(
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFEFF6FF))
+                            .background(c.accentMuted)
                             .padding(horizontal = 12.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         CircularProgressIndicator(
-                            color = Color(0xFF0054D1),
+                            color = c.accent,
                             modifier = Modifier.size(14.dp),
                             strokeWidth = 2.dp
                         )
                         Text(
                             text = "Tutor is thinking...",
-                            color = Color(0xFF0054D1),
+                            color = c.accent,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -327,16 +329,16 @@ fun AiTutorBottomSheet(
                 placeholder = {
                     Text(
                         text = "Ask AI in any language...",
-                        color = Color(0xFF94A3B8),
+                        color = c.textFaint,
                         fontSize = 14.sp
                     )
                 },
-                textStyle = LocalTextStyle.current.copy(color = Color(0xFF1E293B), fontSize = 14.sp),
+                textStyle = LocalTextStyle.current.copy(color = c.textPrimary, fontSize = 14.sp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF0054D1),
-                    unfocusedBorderColor = Color(0xFFE2E8F0),
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedBorderColor = c.accent,
+                    unfocusedBorderColor = c.hairline,
+                    focusedContainerColor = c.surface,
+                    unfocusedContainerColor = c.surface
                 ),
                 shape = RoundedCornerShape(14.dp),
                 singleLine = true,
@@ -360,8 +362,8 @@ fun AiTutorBottomSheet(
                     .size(48.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(
-                        if (textInput.isBlank() || isAiLoading) Color(0xFFE2E8F0)
-                        else Color(0xFF0054D1)
+                        if (textInput.isBlank() || isAiLoading) c.hairline
+                        else c.accent
                     )
                     .clickable(enabled = textInput.isNotBlank() && !isAiLoading) {
                         viewModel.sendTutorMessage(textInput)
@@ -374,7 +376,7 @@ fun AiTutorBottomSheet(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
                     contentDescription = "Send",
-                    tint = if (textInput.isBlank() || isAiLoading) Color(0xFF94A3B8) else Color.White,
+                    tint = if (textInput.isBlank() || isAiLoading) c.textFaint else c.onAccent,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -385,6 +387,7 @@ fun AiTutorBottomSheet(
 
 @Composable
 fun ChatBubbleItem(log: ChatLog) {
+    val c = AppTheme.colors
     val isUser = log.sender == "user"
 
     Row(
@@ -404,11 +407,11 @@ fun ChatBubbleItem(log: ChatLog) {
                     )
                 )
                 .background(
-                    if (isUser) Color(0xFF0054D1) else Color(0xFFF1F5F9)
+                    if (isUser) c.accent else c.surfaceMuted
                 )
                 .border(
                     1.dp,
-                    if (isUser) Color(0xFF0054D1) else Color(0xFFE2E8F0),
+                    if (isUser) c.accent else c.hairline,
                     RoundedCornerShape(
                         topStart = 18.dp,
                         topEnd = 18.dp,
@@ -420,7 +423,7 @@ fun ChatBubbleItem(log: ChatLog) {
         ) {
             Text(
                 text = log.message,
-                color = if (isUser) Color.White else Color(0xFF1E293B),
+                color = if (isUser) c.onAccent else c.textPrimary,
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
@@ -434,17 +437,18 @@ fun SmartHelperChip(
     label: String,
     onClick: () -> Unit
 ) {
+    val c = AppTheme.colors
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(10.dp))
+            .background(c.surface)
+            .border(1.dp, c.hairline, RoundedCornerShape(10.dp))
             .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Text(
             text = label,
-            color = Color(0xFF0054D1),
+            color = c.accent,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
