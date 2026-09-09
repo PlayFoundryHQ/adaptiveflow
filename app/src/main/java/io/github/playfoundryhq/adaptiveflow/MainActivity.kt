@@ -46,6 +46,7 @@ import io.github.playfoundryhq.adaptiveflow.ui.PathTab
 import io.github.playfoundryhq.adaptiveflow.ui.StudySessionScreen
 import io.github.playfoundryhq.adaptiveflow.ui.TutorialTab
 import io.github.playfoundryhq.adaptiveflow.ui.theme.AdaptiveFlowTheme
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 
 class MainActivity : ComponentActivity() {
@@ -55,7 +56,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AdaptiveFlowTheme(darkTheme = false, dynamicColor = false) {
+            AdaptiveFlowTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Transparent
@@ -63,15 +64,7 @@ class MainActivity : ComponentActivity() {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color(0xFFEEF2FF), // Indigo Mist
-                                        Color(0xFFF5F3FF), // Lavender Shimmer
-                                        Color(0xFFF8FAFC)  // Soft Pearl Base
-                                    )
-                                )
-                            )
+                            .background(Brush.verticalGradient(AppTheme.colors.screenGradient))
                     ) {
                         MainScreen(viewModel)
                     }
@@ -134,115 +127,62 @@ fun MainScreen(viewModel: StudyViewModel) {
 }
 
 
+private data class NavItem(
+    val tab: NavigationTab,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val label: String,
+    val contentDescription: String,
+    val testTag: String,
+)
+
+private val navItems = listOf(
+    NavItem(NavigationTab.Decks, Icons.Default.Layers, "Decks", "Decks Dashboard", "nav_decks_tab"),
+    NavItem(NavigationTab.Path, Icons.Default.Explore, "Quest", "Gamified Path", "nav_path_tab"),
+    NavItem(NavigationTab.Import, Icons.Default.AddCircle, "Import", "One-Tap Import / Create", "nav_import_tab"),
+    NavItem(NavigationTab.Tutorial, Icons.Default.Lightbulb, "Guide", "Visual Onboarding Tutorial", "nav_tutorial_tab"),
+)
+
 @Composable
 fun ZeroLanguageNavigationBar(
     activeTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit
 ) {
+    val c = AppTheme.colors
+    val shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     NavigationBar(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .clip(shape)
+            .border(1.dp, c.hairline, shape)
             .testTag("navigation_bar"),
-        containerColor = Color.White.copy(alpha = 0.95f),
+        containerColor = c.surface.copy(alpha = 0.95f),
         tonalElevation = 8.dp
     ) {
-        NavigationBarItem(
-            selected = activeTab == NavigationTab.Decks,
-            onClick = { onTabSelected(NavigationTab.Decks) },
-            modifier = Modifier.testTag("nav_decks_tab"),
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Layers,
-                    contentDescription = "Decks Dashboard",
-                    tint = if (activeTab == NavigationTab.Decks) Color(0xFF0054D1) else Color(0xFF64748B)
-                )
-            },
-            label = {
-                Text(
-                    "Decks",
-                    fontWeight = if (activeTab == NavigationTab.Decks) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 11.sp,
-                    color = if (activeTab == NavigationTab.Decks) Color(0xFF0054D1) else Color(0xFF64748B)
-                )
-            },
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFEFF6FF)
+        navItems.forEach { item ->
+            val selected = activeTab == item.tab
+            val tint = if (selected) c.accent else c.textSecondary
+            NavigationBarItem(
+                selected = selected,
+                onClick = { onTabSelected(item.tab) },
+                modifier = Modifier.testTag(item.testTag),
+                icon = {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.contentDescription,
+                        tint = tint
+                    )
+                },
+                label = {
+                    Text(
+                        item.label,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 11.sp,
+                        color = tint
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(indicatorColor = c.accentMuted)
             )
-        )
-
-        NavigationBarItem(
-            selected = activeTab == NavigationTab.Path,
-            onClick = { onTabSelected(NavigationTab.Path) },
-            modifier = Modifier.testTag("nav_path_tab"),
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Explore,
-                    contentDescription = "Gamified Path",
-                    tint = if (activeTab == NavigationTab.Path) Color(0xFF0054D1) else Color(0xFF64748B)
-                )
-            },
-            label = {
-                Text(
-                    "Quest",
-                    fontWeight = if (activeTab == NavigationTab.Path) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 11.sp,
-                    color = if (activeTab == NavigationTab.Path) Color(0xFF0054D1) else Color(0xFF64748B)
-                )
-            },
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFEFF6FF)
-            )
-        )
-
-        NavigationBarItem(
-            selected = activeTab == NavigationTab.Import,
-            onClick = { onTabSelected(NavigationTab.Import) },
-            modifier = Modifier.testTag("nav_import_tab"),
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.AddCircle,
-                    contentDescription = "One-Tap Import / Create",
-                    tint = if (activeTab == NavigationTab.Import) Color(0xFF0054D1) else Color(0xFF64748B)
-                )
-            },
-            label = {
-                Text(
-                    "Import",
-                    fontWeight = if (activeTab == NavigationTab.Import) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 11.sp,
-                    color = if (activeTab == NavigationTab.Import) Color(0xFF0054D1) else Color(0xFF64748B)
-                )
-            },
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFEFF6FF)
-            )
-        )
-
-        NavigationBarItem(
-            selected = activeTab == NavigationTab.Tutorial,
-            onClick = { onTabSelected(NavigationTab.Tutorial) },
-            modifier = Modifier.testTag("nav_tutorial_tab"),
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Lightbulb,
-                    contentDescription = "Visual Onboarding Tutorial",
-                    tint = if (activeTab == NavigationTab.Tutorial) Color(0xFF0054D1) else Color(0xFF64748B)
-                )
-            },
-            label = {
-                Text(
-                    "Guide",
-                    fontWeight = if (activeTab == NavigationTab.Tutorial) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 11.sp,
-                    color = if (activeTab == NavigationTab.Tutorial) Color(0xFF0054D1) else Color(0xFF64748B)
-                )
-            },
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFEFF6FF)
-            )
-        )
+        }
     }
 }
 
