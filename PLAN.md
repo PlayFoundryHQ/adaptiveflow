@@ -565,6 +565,20 @@ Instrumented / Robolectric:
 **Docs**
 - ✅ `CLAUDE.md` (invariants), `docs/architecture/overview.md`, README rewritten.
 
+### 2026-09-09 — PR #4 `feat/session-state-and-polish` (v0.1.3) — Phase 2 slice 1
+
+- **A5 / process death** — `StudyViewModel` takes a `SavedStateHandle`;
+  `selectDeck`/`clearActiveDeck` persist+clear the active deck id; `init`
+  reopens an in-progress session with a fresh queue after a kill. Default
+  `SavedStateViewModelFactory` injects it — no `MainActivity` change.
+- **U-x1 fixed** — dead in-session `N / total` counter replaced with a live
+  session score (✓ correct ✗ wrong); redundant frozen blue bar removed.
+- **U-x2 fixed** — `friendlyAiError(AiException)` → actionable provider-aware
+  copy, wired into the tutor + import error paths.
+- Version footer in the Guide tab (`BuildConfig`).
+- Still pending in Phase 2: DI, navigation-compose + back stack, per-screen
+  ViewModels, gamification→Room, Int→Long PKs, one SRS model, reversible merge.
+
 ### 2026-09-09 — PR #3 `fix/copy-honesty` (merged, v0.1.2) + on-device verification
 
 **PR #3 — copy honesty (invariant #3):** rewrote UI strings that claimed
