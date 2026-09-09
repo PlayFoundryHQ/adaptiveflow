@@ -579,6 +579,18 @@ Instrumented / Robolectric:
 - Still pending in Phase 2: DI, navigation-compose + back stack, per-screen
   ViewModels, gamification→Room, Int→Long PKs, one SRS model, reversible merge.
 
+**Device-verified on v0.1.3 (OnePlus, adb, 2026-09-09):** ✅ Guide footer shows
+`v0.1.3 (4)`. ✅ in-session score `✓ 2 ✗ 0` updates live (no frozen counter).
+✅ process death (`am kill` while backgrounded) → relaunch restores the deck
+screen instead of dropping to the Decks list; PLAY starts a clean fresh queue.
+✅ tutor error now reads "DeepSeek rejected the request (Insufficient Balance).
+Check the key or your account balance in Settings, or switch to Gemini."
+(older bare chip is just stale chat history.)
+
+**CI cosmetic:** `verify` warns Node 20 is deprecated for `actions/upload-artifact@v4`
+and `gradle/actions/setup-gradle@v4` (auto-forced to Node 24). Bump when
+convenient; not blocking.
+
 ### 2026-09-09 — PR #3 `fix/copy-honesty` (merged, v0.1.2) + on-device verification
 
 **PR #3 — copy honesty (invariant #3):** rewrote UI strings that claimed
