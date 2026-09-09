@@ -13,10 +13,13 @@ import io.github.playfoundryhq.adaptiveflow.tts.TtsController
  * the ViewModel by its factory. No Hilt / annotation processing; the graph is
  * small enough that a plain container is clearer and has no build-time cost.
  */
-class AppContainer(app: Application) {
-    val database: AppDatabase = AppDatabase.getDatabase(app)
-    val repository: StudyRepository = StudyRepository(database.studyDao())
-    val settings: SettingsStore = SettingsStore(app)
-    val aiClient: AiClient = AiClient()
-    val tts: TtsController = TtsController(app, settings)
+class AppContainer(private val app: Application) {
+    // Everything is lazy so Application.onCreate stays cheap — the DB build,
+    // EncryptedSharedPreferences/Tink init, OkHttp client and TextToSpeech bind
+    // all happen on first use (from the ViewModel), not on the cold-start path.
+    val database: AppDatabase by lazy { AppDatabase.getDatabase(app) }
+    val repository: StudyRepository by lazy { StudyRepository(database.studyDao()) }
+    val settings: SettingsStore by lazy { SettingsStore(app) }
+    val aiClient: AiClient by lazy { AiClient() }
+    val tts: TtsController by lazy { TtsController(app, settings) }
 }

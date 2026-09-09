@@ -45,10 +45,24 @@ class TtsController(context: Context, private val settings: SettingsStore) {
     private val _missingLanguage = MutableStateFlow<Locale?>(null)
     val missingLanguage: StateFlow<Locale?> = _missingLanguage.asStateFlow()
 
-    private var tts: TextToSpeech? = null
+    @Volatile private var tts: TextToSpeech? = null
+    @Volatile private var engineStarted = false
     private var appliedLanguage: Locale? = null
 
-    init {
+    /**
+     * Bind the TTS engine. Binding `GoogleTtsService` costs ~1–2s, so this is
+     * deferred until a study session actually opens rather than run at startup.
+     * Safe to call repeatedly.
+     */
+    @Synchronized
+    fun prepare() {
+        if (engineStarted) return
+        engineStarted = true
+        createEngine()
+    }
+
+    private fun createEngine() {
+        if (tts != null) return
         val engine = pickEngine(appContext)
         val onInit = TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
@@ -74,6 +88,7 @@ class TtsController(context: Context, private val settings: SettingsStore) {
     }
 
     fun speak(text: String, languageCode: String? = null, deckSourceLanguage: String? = null) {
+        if (!engineStarted) prepare()
         val engine = tts ?: return
         if (!_isReady.value) return
         val locale = when {

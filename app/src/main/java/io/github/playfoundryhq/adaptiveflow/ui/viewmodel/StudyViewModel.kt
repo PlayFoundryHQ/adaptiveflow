@@ -538,6 +538,9 @@ class StudyViewModel(
 
     // ---- TTS (delegates to the app-scoped TtsController) ----
 
+    /** Bind the TTS engine — call when a study session opens, not at startup. */
+    fun prepareTts() = tts.prepare()
+
     fun speak(text: String, languageCode: String? = null) =
         tts.speak(text, languageCode, _currentDeck.value?.sourceLanguage)
 

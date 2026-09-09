@@ -81,6 +81,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun StudySessionScreen(viewModel: StudyViewModel) {
     val c = AppTheme.colors
+    LaunchedEffect(Unit) { viewModel.prepareTts() }
     val context = LocalContext.current
     val deck by viewModel.currentDeck.collectAsStateWithLifecycle()
     val cards by viewModel.currentFlashcards.collectAsStateWithLifecycle()
