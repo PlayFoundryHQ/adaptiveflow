@@ -30,6 +30,7 @@ User goal: learning $target from $native.
         appendLine()
         appendLine("Extraction density: $densityInstruction")
         appendLine("Keep definitions detailed. Do not over-summarise.")
+        appendLine("Ignore document chrome — title pages, tables of contents, headers, footers, page numbers, copyright and legal boilerplate, author/publisher lines. Only make cards from substantive terms and concepts.")
         appendLine()
         appendLine("If the input is a YouTube URL, base cards on the video's stated topic/keywords and the Focus hint; prefix the deck name with 📺.")
         appendLine("If the input is document text, prefix the deck name with 📄. Otherwise choose a friendly emoji-prefixed name.")

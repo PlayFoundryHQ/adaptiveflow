@@ -152,9 +152,9 @@ fun ImportTab(viewModel: StudyViewModel) {
         return "${(mb * 10).toInt() / 10.0} MB"
     }
 
-    // Local Document Picker Launcher
+    // Local Document Picker Launcher — restricted to the formats import can read.
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
             try {
@@ -763,7 +763,17 @@ fun ImportTab(viewModel: StudyViewModel) {
         if (selectedImportMode == "Text" || selectedImportMode == "PDF") {
             item {
                 OutlinedButton(
-                    onClick = { filePickerLauncher.launch("*/*") },
+                    onClick = {
+                        filePickerLauncher.launch(
+                            arrayOf(
+                                "application/pdf",
+                                "text/plain",
+                                "text/csv",
+                                "text/comma-separated-values",
+                                "application/json",
+                            )
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
@@ -781,7 +791,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
-                            text = "LOAD LOCAL FILE (.PDF / .TXT / .CSV)",
+                            text = "LOAD LOCAL FILE (.PDF / .TXT / .CSV / .JSON)",
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
                             letterSpacing = 0.5.sp
