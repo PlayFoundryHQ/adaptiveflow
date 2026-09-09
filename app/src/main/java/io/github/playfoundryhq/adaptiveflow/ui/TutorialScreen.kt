@@ -71,6 +71,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import java.io.File
@@ -96,6 +97,7 @@ fun rememberOnboardingHeroId(): Int {
 @Composable
 fun TutorialTab() {
     val heroResId = rememberOnboardingHeroId()
+    val c = AppTheme.colors
 
     LazyColumn(
         modifier = Modifier
@@ -112,7 +114,7 @@ fun TutorialTab() {
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = FontFamily.SansSerif,
-                color = Color(0xFF1E293B),
+                color = c.textPrimary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp)
             )
@@ -121,7 +123,7 @@ fun TutorialTab() {
                 text = "Universal Semantic Learning",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF64748B),
+                color = c.textSecondary,
                 textAlign = TextAlign.Center
             )
         }
@@ -132,7 +134,7 @@ fun TutorialTab() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
-                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(20.dp)),
+                    .border(1.dp, c.hairline, RoundedCornerShape(20.dp)),
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -194,7 +196,7 @@ fun TutorialTab() {
         item {
             Text(
                 text = "AdaptiveFlow v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
-                color = Color(0xFF94A3B8),
+                color = c.textFaint,
                 fontSize = 11.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -212,12 +214,13 @@ fun TutorialPillarItem(
     title: String,
     desc: String
 ) {
+    val c = AppTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(18.dp))
+            .background(c.surface)
+            .border(1.dp, c.hairline, RoundedCornerShape(18.dp))
             .padding(18.dp),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -226,27 +229,27 @@ fun TutorialPillarItem(
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFEFF6FF)),
+                .background(c.accentMuted),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color(0xFF0054D1),
+                tint = c.accent,
                 modifier = Modifier.size(22.dp)
             )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                color = Color(0xFF1E293B),
+                color = c.textPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = desc,
-                color = Color(0xFF64748B),
+                color = c.textSecondary,
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
