@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
@@ -51,8 +52,12 @@ data class ParsedDeck(
 )
 
 private const val MASTER_POOL_NAME = "🧠 Master Vocabulary Pool"
+private const val KEY_ACTIVE_DECK = "activeDeckId"
 
-class StudyViewModel(application: Application) : AndroidViewModel(application) {
+class StudyViewModel(
+    application: Application,
+    private val savedState: SavedStateHandle,
+) : AndroidViewModel(application) {
 
     private val repository: StudyRepository
     private val settings = SettingsStore(application)
@@ -178,6 +183,30 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
         val name = _aiProviderId.value.displayName
         return "AI features need an API key. Add your $name key in Settings, or paste a plain " +
             "\"word: meaning\" list to import offline."
+    }
+
+    /** Turns an [AiException] into a short, actionable sentence for the user. */
+    private fun friendlyAiError(e: AiException): String {
+        val name = _aiProviderId.value.displayName
+        val other = if (_aiProviderId.value == AiProviderId.GEMINI) "DeepSeek" else "Gemini"
+        val base = e.message?.trim().orEmpty()
+        return when (e.kind) {
+            AiException.Kind.AUTH ->
+                "$name rejected the request${if (base.isNotEmpty()) " ($base)" else ""}. " +
+                    "Check the key or your account balance in Settings, or switch to $other."
+            AiException.Kind.RATE_LIMIT ->
+                "$name is rate-limiting requests. Wait a moment and try again."
+            AiException.Kind.NETWORK ->
+                "Couldn't reach $name — check your connection and try again."
+            AiException.Kind.PAYLOAD_TOO_LARGE ->
+                "That input is too large for $name in one go. Split it into smaller parts."
+            AiException.Kind.TRANSIENT ->
+                "$name is temporarily unavailable. Try again shortly."
+            AiException.Kind.EMPTY ->
+                "$name returned nothing usable. Try rephrasing, or switch to $other."
+            else ->
+                base.ifEmpty { "$name couldn't complete that request." }
+        }
     }
 
     // ---- JSON extraction / repair ----
@@ -356,6 +385,16 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
                 settings.hasSeeded = true
             }
         }
+
+        // Restore an in-progress study session after process death. The
+        // reordered queue and per-session counters are ephemeral by design —
+        // we just reopen the same deck with a fresh queue.
+        savedState.get<Int>(KEY_ACTIVE_DECK)?.let { deckId ->
+            viewModelScope.launch {
+                repository.getDeckById(deckId)?.let { selectDeck(it) }
+                    ?: savedState.remove<Int>(KEY_ACTIVE_DECK)
+            }
+        }
     }
 
     // ---- deck selection / session ----
@@ -363,6 +402,7 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
     private val srsComparator = compareBy<Flashcard> { it.nextReview }.thenBy { it.repetitions }.thenBy { it.easeFactor }
 
     fun selectDeck(deck: Deck) {
+        savedState[KEY_ACTIVE_DECK] = deck.id
         _currentDeck.value = deck
         _currentCardIndex.value = 0
         _isCardFlipped.value = false
@@ -381,6 +421,7 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun clearActiveDeck() {
+        savedState.remove<Int>(KEY_ACTIVE_DECK)
         _currentDeck.value = null
         _currentFlashcards.value = emptyList()
         _chatLogs.value = emptyList()
@@ -806,7 +847,7 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
                 _importState.value = ImportState.Success(name)
             } catch (e: AiException) {
                 Log.e("StudyViewModel", "import AI error (${e.kind})", e)
-                _importState.value = ImportState.Error(e.message ?: "AI request failed.")
+                _importState.value = ImportState.Error(friendlyAiError(e))
             } catch (e: Exception) {
                 Log.e("StudyViewModel", "import failed", e)
                 _importState.value = ImportState.Error(e.message ?: "Import failed.")
@@ -856,7 +897,7 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
                 repository.insertChatLog(ChatLog(deckId = deck.id, flashcardId = activeCard?.id, sender = "ai", message = reply))
             } catch (e: AiException) {
                 Log.e("StudyViewModel", "tutor error (${e.kind})", e)
-                repository.insertChatLog(ChatLog(deckId = deck.id, sender = "ai", message = e.message ?: "The tutor couldn't respond."))
+                repository.insertChatLog(ChatLog(deckId = deck.id, sender = "ai", message = friendlyAiError(e)))
             } catch (e: Exception) {
                 Log.e("StudyViewModel", "tutor error", e)
                 repository.insertChatLog(ChatLog(deckId = deck.id, sender = "ai", message = "Lost connection to the tutor — check your network and try again."))
