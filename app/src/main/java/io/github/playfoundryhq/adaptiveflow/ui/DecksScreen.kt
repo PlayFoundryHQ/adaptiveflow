@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.*
@@ -496,7 +497,7 @@ fun DeckCardItem(
 
                         // Arrow
                         Icon(
-                            imageVector = Icons.Default.CompareArrows,
+                            imageVector = Icons.AutoMirrored.Filled.CompareArrows,
                             contentDescription = null,
                             tint = Color(0xFF64748B),
                             modifier = Modifier.size(14.dp)
@@ -530,7 +531,7 @@ fun DeckCardItem(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowForwardIos,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                         contentDescription = null,
                         tint = Color(0xFF64748B),
                         modifier = Modifier.size(11.dp)
@@ -583,7 +584,7 @@ fun DeckCardItem(
             ) {
                 // Total cards stat
                 StatChip(
-                    icon = Icons.Default.MenuBook,
+                    icon = Icons.AutoMirrored.Filled.MenuBook,
                     label = "$totalCards Words",
                     contentColor = Color(0xFF475569),
                     backgroundColor = Color(0xFFF8FAFC),
