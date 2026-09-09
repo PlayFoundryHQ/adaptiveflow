@@ -1,6 +1,6 @@
 # AdaptiveFlow — End‑to‑End Audit & Remediation Plan
 
-> Status: audit 2026‑09‑09 · **Phase 0 + Phase‑1 essentials landed** on branch
+> Status: audit 2026‑09‑09 · **Phase 0 + Phase‑1 essentials — MERGED (PR #1), v0.1.0 released**. Was on branch
 > `feat/stabilize-and-multi-provider-ai` (see §10 progress log) · Companion
 > project: **Slim** (`../Slim`, `PlayFoundryHQ/Slim`)
 >
