@@ -1,52 +1,56 @@
 package io.github.playfoundryhq.adaptiveflow.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.CompositionLocalProvider
 
-private val DarkColorScheme =
-  darkColorScheme(primary = Purple80, secondary = PurpleGrey80, tertiary = Pink80)
+/**
+ * Master switch for dark mode. Flipped to `true` once every screen reads
+ * [AppTheme.colors] instead of hard-coded hex — until then a system dark theme
+ * would leave un-migrated screens with dark text on a dark background.
+ * Migration progress: MainActivity nav + DecksScreen done.
+ */
+const val DARK_MODE_ENABLED = false
 
-private val LightColorScheme =
-  lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-  )
-
+/**
+ * AdaptiveFlow has a deliberate brand palette, so Material You dynamic colour is
+ * off. The real colour surface for screens is [AppTheme.colors]; the M3
+ * `colorScheme` here only backs system chrome (ripples, text selection,
+ * date pickers, …) and is derived from the same tokens.
+ */
 @Composable
 fun AdaptiveFlowTheme(
-  darkTheme: Boolean = isSystemInDarkTheme(),
-  // Dynamic color is available on Android 12+
-  dynamicColor: Boolean = true,
-  content: @Composable () -> Unit,
+    darkTheme: Boolean = DARK_MODE_ENABLED && isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
 ) {
-  val colorScheme =
-    when {
-      dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-        val context = LocalContext.current
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-      }
+    val appColors = if (darkTheme) DarkAppColors else LightAppColors
 
-      darkTheme -> DarkColorScheme
-      else -> LightColorScheme
+    val colorScheme = if (darkTheme) {
+        darkColorScheme(
+            primary = appColors.accent,
+            onPrimary = appColors.onAccent,
+            background = appColors.screenGradient.last(),
+            surface = appColors.surface,
+            onSurface = appColors.textPrimary,
+            onBackground = appColors.textPrimary,
+            error = appColors.danger,
+        )
+    } else {
+        lightColorScheme(
+            primary = appColors.accent,
+            onPrimary = appColors.onAccent,
+            background = appColors.screenGradient.last(),
+            surface = appColors.surface,
+            onSurface = appColors.textPrimary,
+            onBackground = appColors.textPrimary,
+            error = appColors.danger,
+        )
     }
 
-  MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
+    CompositionLocalProvider(LocalAppColors provides appColors) {
+        MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
+    }
 }

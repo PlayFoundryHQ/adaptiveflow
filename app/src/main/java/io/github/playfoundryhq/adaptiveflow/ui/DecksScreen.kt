@@ -71,6 +71,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
+import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import java.io.File
@@ -141,6 +142,7 @@ fun DecksTab(
     onNavigateToImport: () -> Unit
 ) {
     val decks by viewModel.allDecks.collectAsStateWithLifecycle()
+    val c = AppTheme.colors
     var isSettingsOpen by remember { mutableStateOf(false) }
     var isGoalSettingsOpen by remember { mutableStateOf(false) }
 
@@ -165,12 +167,12 @@ fun DecksTab(
                 .align(Alignment.TopEnd)
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF1F5F9))
+                .background(c.surfaceMuted)
         ) {
             Icon(
                 imageVector = Icons.Default.VpnKey,
                 contentDescription = "API Key Configuration",
-                tint = Color(0xFF64748B),
+                tint = c.textSecondary,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -187,37 +189,37 @@ fun DecksTab(
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFF1F5F9)),
+                        .background(c.surfaceMuted),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.FolderOpen,
                         contentDescription = null,
-                        tint = Color(0xFF64748B),
+                        tint = c.textSecondary,
                         modifier = Modifier.size(40.dp)
                     )
                 }
                 Text(
                     text = "Your Library is Empty",
-                    color = Color(0xFF1E293B),
+                    color = c.textPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "Your library is currently empty. Import some new study material from YouTube, PDF, or raw text to continue learning!",
-                    color = Color(0xFF64748B),
+                    color = c.textSecondary,
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Button(
                     onClick = onNavigateToImport,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0054D1)),
+                    colors = ButtonDefaults.buttonColors(containerColor = c.accent),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.height(48.dp)
                 ) {
-                    Text("Import / Create Deck", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Import / Create Deck", color = c.onAccent, fontWeight = FontWeight.Bold)
                 }
             }
         } else {
@@ -233,13 +235,13 @@ fun DecksTab(
                     Column {
                         Text(
                             text = "Decks",
-                            color = Color(0xFF1E293B),
+                            color = c.textPrimary,
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Black
                         )
                         Text(
                             text = "Universal Study Dashboard",
-                            color = Color(0xFF64748B),
+                            color = c.textSecondary,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -252,14 +254,14 @@ fun DecksTab(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFFEF3C7))
+                                .background(c.warningMuted)
                                 .clickable { isGoalSettingsOpen = true },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Flag,
                                 contentDescription = "Active Study Goal Settings",
-                                tint = Color(0xFFD97706),
+                                tint = c.warning,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -268,14 +270,14 @@ fun DecksTab(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFF1F5F9))
+                                .background(c.surfaceMuted)
                                 .clickable { isSettingsOpen = true },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.VpnKey,
                                 contentDescription = "API Key Configuration",
-                                tint = Color(0xFF64748B),
+                                tint = c.textSecondary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -284,14 +286,14 @@ fun DecksTab(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFEFF6FF))
+                                .background(c.accentMuted)
                                 .clickable { onNavigateToImport() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Create New Deck",
-                                tint = Color(0xFF0054D1),
+                                tint = c.accent,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -313,11 +315,7 @@ fun DecksTab(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(Color(0xFF0F172A), Color(0xFF1E293B))
-                                )
-                            )
+                            .background(c.heroSurface)
                             .padding(20.dp)
                     ) {
                         Column(modifier = Modifier.align(Alignment.CenterStart)) {
@@ -341,7 +339,7 @@ fun DecksTab(
                                 }
                                 Text(
                                     text = "• Click to edit",
-                                    color = Color.White.copy(alpha = 0.5f),
+                                    color = c.heroTextMuted.copy(alpha = 0.5f),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -349,14 +347,14 @@ fun DecksTab(
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = "Learn $targetLanguage from $nativeLanguage",
-                                color = Color.White,
+                                color = c.heroText,
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = "New decks, quizzes, and tutor replies are tuned to $targetLanguage. Tap any deck below to study!",
-                                color = Color.White.copy(alpha = 0.8f),
+                                color = c.heroTextMuted,
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
                             )
@@ -364,7 +362,7 @@ fun DecksTab(
                         Icon(
                             imageVector = Icons.Default.Flag,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.15f),
+                            tint = c.heroText.copy(alpha = 0.15f),
                             modifier = Modifier
                                 .size(80.dp)
                                 .align(Alignment.BottomEnd)
@@ -396,8 +394,8 @@ fun DecksTab(
                 .align(Alignment.BottomEnd)
                 .padding(bottom = 16.dp, end = 8.dp)
                 .testTag("create_deck_fab"),
-            containerColor = Color(0xFF0054D1),
-            contentColor = Color.White,
+            containerColor = c.accent,
+            contentColor = c.onAccent,
             shape = RoundedCornerShape(16.dp)
         ) {
             Icon(
@@ -417,6 +415,7 @@ fun DeckCardItem(
     val deck = deckWithCards.deck
     val cards = deckWithCards.flashcards
     val style = getStyleForLanguage(deck.sourceLanguage, deck.name)
+    val c = AppTheme.colors
 
     val totalCards = cards.size
     val learnedCards = cards.count { it.repetitions > 0 }
@@ -429,7 +428,7 @@ fun DeckCardItem(
             .clickable { onClick() }
             .testTag("deck_item_${deck.id}"),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = c.surface
         ),
         shape = RoundedCornerShape(22.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -437,7 +436,7 @@ fun DeckCardItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(22.dp))
+                .border(1.dp, c.hairline, RoundedCornerShape(22.dp))
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -466,7 +465,7 @@ fun DeckCardItem(
                 ) {
                     Text(
                         text = deck.name,
-                        color = Color(0xFF1E293B),
+                        color = c.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -499,7 +498,7 @@ fun DeckCardItem(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.CompareArrows,
                             contentDescription = null,
-                            tint = Color(0xFF64748B),
+                            tint = c.textSecondary,
                             modifier = Modifier.size(14.dp)
                         )
 
@@ -508,12 +507,12 @@ fun DeckCardItem(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0xFFF1F5F9))
+                                    .background(c.surfaceMuted)
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = deck.targetLanguage,
-                                    color = Color(0xFF475569),
+                                    color = c.textSecondary,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -527,13 +526,13 @@ fun DeckCardItem(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFF8FAFC)),
+                        .background(c.surfaceMuted),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                         contentDescription = null,
-                        tint = Color(0xFF64748B),
+                        tint = c.textSecondary,
                         modifier = Modifier.size(11.dp)
                     )
                 }
@@ -541,7 +540,7 @@ fun DeckCardItem(
 
             // Divider
             HorizontalDivider(
-                color = Color(0xFFF1F5F9),
+                color = c.hairline,
                 thickness = 1.dp
             )
 
@@ -554,13 +553,13 @@ fun DeckCardItem(
                 ) {
                     Text(
                         text = "Mastery Progress",
-                        color = Color(0xFF64748B),
+                        color = c.textSecondary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "$learnedCards / $totalCards Words (${(learnedProgress * 100).toInt()}%)",
-                        color = Color(0xFF0F172A),
+                        color = c.textPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -572,8 +571,8 @@ fun DeckCardItem(
                         .fillMaxWidth()
                         .height(6.dp)
                         .clip(CircleShape),
-                    color = if (learnedProgress >= 0.8f) Color(0xFF10B981) else style.textColor,
-                    trackColor = Color(0xFFF1F5F9)
+                    color = if (learnedProgress >= 0.8f) c.success else style.textColor,
+                    trackColor = c.surfaceMuted
                 )
             }
 
@@ -586,8 +585,8 @@ fun DeckCardItem(
                 StatChip(
                     icon = Icons.AutoMirrored.Filled.MenuBook,
                     label = "$totalCards Words",
-                    contentColor = Color(0xFF475569),
-                    backgroundColor = Color(0xFFF8FAFC),
+                    contentColor = c.textSecondary,
+                    backgroundColor = c.surfaceMuted,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -595,8 +594,8 @@ fun DeckCardItem(
                 StatChip(
                     icon = Icons.Default.CheckCircle,
                     label = "$learnedCards Learned",
-                    contentColor = Color(0xFF16A34A),
-                    backgroundColor = Color(0xFFF0FDF4),
+                    contentColor = c.success,
+                    backgroundColor = c.successMuted,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -604,8 +603,8 @@ fun DeckCardItem(
                 StatChip(
                     icon = Icons.Default.Schedule,
                     label = if (reviewsDue > 0) "$reviewsDue Due" else "0 Due",
-                    contentColor = if (reviewsDue > 0) Color(0xFFD97706) else Color(0xFF94A3B8),
-                    backgroundColor = if (reviewsDue > 0) Color(0xFFFEF3C7) else Color(0xFFF8FAFC),
+                    contentColor = if (reviewsDue > 0) c.warning else c.textFaint,
+                    backgroundColor = if (reviewsDue > 0) c.warningMuted else c.surfaceMuted,
                     modifier = Modifier.weight(1f)
                 )
             }
