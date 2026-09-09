@@ -58,7 +58,9 @@ class TtsController(context: Context, private val settings: SettingsStore) {
     fun prepare() {
         if (engineStarted) return
         engineStarted = true
-        createEngine()
+        // Binding the engine service can stall the caller for ~2s — do it off
+        // whatever thread asked (usually a Compose LaunchedEffect on main).
+        Thread({ createEngine() }, "tts-init").start()
     }
 
     private fun createEngine() {

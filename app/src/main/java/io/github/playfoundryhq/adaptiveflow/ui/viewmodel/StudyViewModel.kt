@@ -614,7 +614,13 @@ class StudyViewModel(
         targetLanguage: String?,
         parsedCards: List<ParsedCard>,
     ): ImportState {
+        // The Master Vocabulary Pool is a singleton — an import that names it
+        // (e.g. re-importing an export of it) merges rather than making a second,
+        // undeletable copy.
         val existingDeck = targetDeckId?.let { repository.getDeckById(it) }
+            ?: if (deckName == MASTER_POOL_NAME) {
+                repository.allDecksFlowSnapshot().firstOrNull { it.name == MASTER_POOL_NAME }
+            } else null
         if (existingDeck != null) {
             val existingCards = repository.getFlashcardsForDeck(existingDeck.id)
             val plan = DeckMerge.plan(
