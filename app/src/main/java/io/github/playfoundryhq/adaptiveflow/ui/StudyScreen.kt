@@ -580,25 +580,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
                     ) {
-                        LinearProgressIndicator(
-                            progress = { (currentIndex + 1).toFloat() / cards.size.toFloat() },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp)),
-                            color = Color(0xFF0054D1),
-                            trackColor = Color(0xFFDDE1FF)
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "${currentIndex + 1} / ${cards.size}",
+                                text = "✓ $correctTotal   ✗ $incorrectTotal",
                                 color = Color(0xFF44474E),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold

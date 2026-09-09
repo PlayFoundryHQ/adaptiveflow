@@ -1,5 +1,6 @@
 package io.github.playfoundryhq.adaptiveflow.ui
 
+import io.github.playfoundryhq.adaptiveflow.BuildConfig
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
@@ -188,6 +189,18 @@ fun TutorialTab() {
                     desc = "Stuck on a card? Open the tutor chat for pronunciation tips, usage examples, and simpler explanations. Needs an API key."
                 )
             }
+        }
+
+        item {
+            Text(
+                text = "AdaptiveFlow v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                color = Color(0xFF94A3B8),
+                fontSize = 11.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 4.dp)
+            )
         }
     }
 }
