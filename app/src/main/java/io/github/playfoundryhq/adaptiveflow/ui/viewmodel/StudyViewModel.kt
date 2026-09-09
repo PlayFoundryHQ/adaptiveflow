@@ -533,26 +533,30 @@ class StudyViewModel(
         }
     }
 
+    /** Non-deprecated replacement for `Locale(lang)` / `Locale(lang, region)`. */
+    private fun locale(language: String, region: String? = null): Locale =
+        Locale.Builder().setLanguage(language).apply { region?.let { setRegion(it) } }.build()
+
     private fun localeFromLanguageName(name: String): Locale {
         val t = name.lowercase(Locale.ROOT).trim()
-        if (t.length == 2) return Locale(t)
+        if (t.length == 2) return locale(t)
         return when (t) {
-            "persian", "farsi" -> Locale("fa")
-            "spanish" -> Locale("es", "ES")
+            "persian", "farsi" -> locale("fa")
+            "spanish" -> locale("es", "ES")
             "french" -> Locale.FRENCH
             "german" -> Locale.GERMAN
-            "swedish" -> Locale("sv", "SE")
+            "swedish" -> locale("sv", "SE")
             "italian" -> Locale.ITALIAN
             "japanese" -> Locale.JAPANESE
             "korean" -> Locale.KOREAN
             "chinese" -> Locale.CHINESE
             "english" -> Locale.ENGLISH
-            "arabic" -> Locale("ar")
-            "portuguese" -> Locale("pt", "PT")
-            "russian" -> Locale("ru")
-            "hindi" -> Locale("hi")
-            "turkish" -> Locale("tr")
-            "dutch" -> Locale("nl", "NL")
+            "arabic" -> locale("ar")
+            "portuguese" -> locale("pt", "PT")
+            "russian" -> locale("ru")
+            "hindi" -> locale("hi")
+            "turkish" -> locale("tr")
+            "dutch" -> locale("nl", "NL")
             else -> Locale.getAvailableLocales().firstOrNull {
                 it.displayLanguage.lowercase(Locale.ROOT) == t || it.language.lowercase(Locale.ROOT) == t
             } ?: Locale.getDefault()

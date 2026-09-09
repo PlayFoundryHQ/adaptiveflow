@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.*
@@ -353,8 +354,8 @@ fun ImportTab(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = when (selectedImportMode) {
                                 "YouTube" -> Icons.Default.SmartDisplay
-                                "PDF" -> Icons.Default.InsertDriveFile
-                                else -> Icons.Default.Subject
+                                "PDF" -> Icons.AutoMirrored.Filled.InsertDriveFile
+                                else -> Icons.AutoMirrored.Filled.Subject
                             },
                             contentDescription = null,
                             tint = Color(0xFF0054D1),
@@ -418,7 +419,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = if (isExternalHelperExpanded) Icons.Default.AutoAwesome else Icons.Default.Help,
+                                imageVector = if (isExternalHelperExpanded) Icons.Default.AutoAwesome else Icons.AutoMirrored.Filled.Help,
                                 contentDescription = null,
                                 tint = if (isExternalHelperExpanded) Color(0xFF9333EA) else Color(0xFF64748B),
                                 modifier = Modifier.size(20.dp)
@@ -631,7 +632,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.InsertDriveFile,
+                                imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
                                 contentDescription = null,
                                 tint = if (attachedFileMimeType.contains("pdf")) Color(0xFFEF4444) else Color(0xFF22C55E),
                                 modifier = Modifier.size(24.dp)

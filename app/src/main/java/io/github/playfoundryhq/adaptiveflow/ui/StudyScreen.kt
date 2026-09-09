@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.*
@@ -662,7 +663,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                             .testTag("speak_front_button")
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.VolumeUp,
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                             contentDescription = "Read Aloud",
                                             tint = Color(0xFF001453),
                                             modifier = Modifier.size(28.dp)
@@ -909,7 +910,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 }
                             }
                             Icon(
-                                imageVector = Icons.Default.Chat,
+                                imageVector = Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = "Open Chat",
                                 tint = Color(0xFF0054D1),
                                 modifier = Modifier.size(20.dp)
@@ -966,7 +967,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     }
                 }
 
-                Divider(color = Color(0xFFC4C6D0))
+                HorizontalDivider(color = Color(0xFFC4C6D0))
 
                 // Play Mode style
                 val isPlayModeActive by viewModel.isPlayModeActive.collectAsStateWithLifecycle()
@@ -1102,7 +1103,7 @@ fun getIconForCard(card: Flashcard): ImageVector {
     return when {
         term.contains("apple") || term.contains("seeb") || term.contains("fruta") || term.contains("fruit") -> Icons.Default.Spa
         term.contains("heart") || term.contains("corazón") || term.contains("love") || term.contains("amor") -> Icons.Default.Favorite
-        term.contains("book") || term.contains("ketāb") || term.contains("libro") || term.contains("read") || term.contains("study") -> Icons.Default.MenuBook
+        term.contains("book") || term.contains("ketāb") || term.contains("libro") || term.contains("read") || term.contains("study") -> Icons.AutoMirrored.Filled.MenuBook
         term.contains("friend") || term.contains("doost") || term.contains("amigo") || term.contains("people") || term.contains("person") -> Icons.Default.People
         term.contains("sun") || term.contains("khorsheed") || term.contains("sol") || term.contains("light") -> Icons.Default.WbSunny
         term.contains("star") || term.contains("estrella") -> Icons.Default.Star
@@ -1186,7 +1187,7 @@ fun InteractiveFlashcard(
                             .testTag("speak_front_button")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.VolumeUp,
+                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                             contentDescription = "Read Aloud",
                             tint = Color(0xFF0054D1),
                             modifier = Modifier.size(28.dp)
@@ -1277,7 +1278,7 @@ fun InteractiveFlashcard(
                             .testTag("speak_back_button")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.VolumeUp,
+                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                             contentDescription = "Read Aloud",
                             tint = Color(0xFF0054D1),
                             modifier = Modifier.size(28.dp)

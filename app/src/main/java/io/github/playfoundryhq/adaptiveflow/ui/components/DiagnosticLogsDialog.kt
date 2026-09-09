@@ -472,7 +472,7 @@ fun InAppLogItemRow(entry: DiagnosticLogger.LogEntry) {
 
         if (expanded && hasStackTrace) {
             Spacer(modifier = Modifier.height(8.dp))
-            Divider(color = Color(0xFF334155))
+            HorizontalDivider(color = Color(0xFF334155))
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = entry.stackTrace.orEmpty(),

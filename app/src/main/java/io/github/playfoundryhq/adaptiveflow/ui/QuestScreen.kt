@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.*
@@ -646,7 +647,7 @@ fun PathTab(
                                     )
 
                                     Icon(
-                                        imageVector = Icons.Default.ArrowForward,
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                         contentDescription = "Details",
                                         tint = Color(0xFF94A3B8),
                                         modifier = Modifier.size(20.dp)
