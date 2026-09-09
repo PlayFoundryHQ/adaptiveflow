@@ -1,0 +1,110 @@
+name: CI
+
+# One workflow, one trigger, one Gradle setup — keeps Actions usage low.
+#   PR / push to main  -> verify (lint + unit tests + debug APK)
+#   push to main only  -> also build a SIGNED release APK and publish/update a
+#                         GitHub Release, so the newest main is always installable
+#                         from  releases/latest/download/adaptiveflow-latest.apk
+#
+# Path filter on `push` means doc-only commits to main don't rebuild or re-release.
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "app/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - run: chmod +x gradlew
+
+      - name: Lint
+        run: ./gradlew lintDebug
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Assemble debug APK
+        run: ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: adaptiveflow-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: chmod +x gradlew
+
+      - name: Decode signing keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+
+      - name: Build signed release APK
+        env:
+          KEYSTORE_FILE: ${{ runner.temp }}/release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Read version name
+        id: version
+        run: echo "value=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
+
+      - name: Stage APKs
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk "adaptiveflow-v${{ steps.version.outputs.value }}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "adaptiveflow-latest.apk"
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ steps.version.outputs.value }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" adaptiveflow-v*.apk adaptiveflow-latest.apk --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" adaptiveflow-v*.apk adaptiveflow-latest.apk \
+              --repo "$GITHUB_REPOSITORY" --title "AdaptiveFlow $TAG" --generate-notes --latest
+          fi
