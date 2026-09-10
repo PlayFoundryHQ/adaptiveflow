@@ -13,8 +13,8 @@ android {
     applicationId = "io.github.playfoundryhq.adaptiveflow"
     minSdk = 24
     targetSdk = 36
-    versionCode = 13
-    versionName = "0.4.0"
+    versionCode = 14
+    versionName = "0.5.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -68,7 +68,12 @@ android {
       excludes += "META-INF/versions/**"
     }
   }
-  testOptions { unitTests { isIncludeAndroidResources = true } }
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all { it.systemProperty("robolectric.graphicsMode", "NATIVE") }
+    }
+  }
 
   lint {
     // CI's `verify` job already runs `lintDebug` on every PR/push. Re-running
@@ -81,6 +86,15 @@ android {
 ksp {
   arg("room.schemaLocation", "${projectDir}/schemas")
   arg("room.generateKotlin", "true")
+}
+
+// Visual-regression reference images live in the repo. Plain `testDebugUnitTest`
+// (the CI gate) still executes the screenshot tests — rendering each composable
+// so a crash or exception fails the build — but only `recordRoborazziDebug` /
+// `verifyRoborazziDebug` write or diff the PNGs, keeping CI free of font-hinting
+// flake.
+roborazzi {
+  outputDir.set(file("src/test/screenshots"))
 }
 
 dependencies {
