@@ -63,6 +63,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
 import io.github.playfoundryhq.adaptiveflow.R
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiProviderId
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
@@ -107,14 +108,14 @@ fun AiTutorBottomSheet(
             },
             title = {
                 Text(
-                    text = "Clear tutor chat history?",
+                    text = stringResource(R.string.tutor_clear_title),
                     fontWeight = FontWeight.Bold,
                     color = c.textPrimary
                 )
             },
             text = {
                 Text(
-                    text = "This permanently deletes this conversation with the AI Tutor. This cannot be undone.",
+                    text = stringResource(R.string.tutor_clear_body),
                     color = c.textSecondary
                 )
             },
@@ -123,12 +124,12 @@ fun AiTutorBottomSheet(
                     showClearChatConfirmation = false
                     viewModel.clearChatHistory()
                 }) {
-                    Text("Clear", color = c.danger, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.tutor_clear_confirm), color = c.danger, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearChatConfirmation = false }) {
-                    Text("Cancel", color = c.textSecondary)
+                    Text(stringResource(R.string.action_cancel), color = c.textSecondary)
                 }
             }
         )
@@ -167,13 +168,13 @@ fun AiTutorBottomSheet(
                 }
                 Column {
                     Text(
-                        text = "AI Adaptive Tutor",
+                        text = stringResource(R.string.tutor_header_title),
                         color = c.textPrimary,
                         fontWeight = FontWeight.Black,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Real-time semantic guidance",
+                        text = stringResource(R.string.tutor_header_subtitle),
                         color = c.textSecondary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -185,14 +186,14 @@ fun AiTutorBottomSheet(
                 IconButton(onClick = { showClearChatConfirmation = true }) {
                     Icon(
                         imageVector = Icons.Default.DeleteSweep,
-                        contentDescription = "Clear Chat",
+                        contentDescription = stringResource(R.string.tutor_clear_chat),
                         tint = c.textSecondary
                     )
                 }
                 IconButton(onClick = onClose) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
+                        contentDescription = stringResource(R.string.action_close),
                         tint = c.textPrimary
                     )
                 }
@@ -234,14 +235,14 @@ fun AiTutorBottomSheet(
                             )
                         }
                         Text(
-                            text = "How can I support your study today?",
+                            text = stringResource(R.string.tutor_empty_title),
                             color = c.textPrimary,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Ask for pronunciation, custom example sentences, or cultural origin hints in any language!",
+                            text = stringResource(R.string.tutor_empty_body),
                             color = c.textSecondary,
                             fontSize = 12.sp,
                             textAlign = TextAlign.Center,
@@ -272,7 +273,7 @@ fun AiTutorBottomSheet(
                             strokeWidth = 2.dp
                         )
                         Text(
-                            text = "Tutor is thinking...",
+                            text = stringResource(R.string.tutor_thinking),
                             color = c.accent,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -291,19 +292,19 @@ fun AiTutorBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SmartHelperChip(
-                    label = "💡 Pronounce",
+                    label = stringResource(R.string.tutor_chip_pronounce),
                     onClick = {
                         viewModel.sendTutorMessage("How do I correctly pronounce this word? Give me phonetic details.")
                     }
                 )
                 SmartHelperChip(
-                    label = "📚 Examples",
+                    label = stringResource(R.string.tutor_chip_examples),
                     onClick = {
                         viewModel.sendTutorMessage("Give me 2 simple examples showing how this word is used in conversational sentences.")
                     }
                 )
                 SmartHelperChip(
-                    label = "🗺️ Origin",
+                    label = stringResource(R.string.tutor_chip_origin),
                     onClick = {
                         viewModel.sendTutorMessage("What is the cultural background or origin of this term?")
                     }
@@ -327,7 +328,7 @@ fun AiTutorBottomSheet(
                     .testTag("ai_tutor_input_field"),
                 placeholder = {
                     Text(
-                        text = "Ask AI in any language...",
+                        text = stringResource(R.string.tutor_input_hint),
                         color = c.textFaint,
                         fontSize = 14.sp
                     )
@@ -374,7 +375,7 @@ fun AiTutorBottomSheet(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Send",
+                    contentDescription = stringResource(R.string.action_send),
                     tint = if (textInput.isBlank() || isAiLoading) c.textFaint else c.onAccent,
                     modifier = Modifier.size(20.dp)
                 )

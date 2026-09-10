@@ -20,5 +20,54 @@
     <string name="guide_pillar_goal_desc">Choose your native and target language on the Quest tab. Every new deck, quiz, and tutor reply is tuned to that goal.</string>
     <string name="guide_pillar_tutor_title">AI Tutor</string>
     <string name="guide_pillar_tutor_desc">Stuck on a card? Open the tutor chat for pronunciation tips, usage examples, and simpler explanations. Needs an API key.</string>
+    <string name="version_footer">%1$s v%2$s (%3$d)</string>
+
+    <!-- Common -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_hide">Hide</string>
+    <string name="action_show">Show</string>
+
+    <!-- API key dialog -->
+    <string name="key_dialog_title">AI provider &amp; key</string>
+    <string name="key_dialog_save">Save &amp; use</string>
+    <string name="key_dialog_blurb">AdaptiveFlow uses your own API key — nothing is bundled or shared. Pick a provider and paste its key. Without a key, AI import and the tutor are off, but you can still import a plain \"word: meaning\" list offline.</string>
+    <string name="key_dialog_privacy">When a key is set, the text you import and your tutor messages are sent to that provider (Google or DeepSeek) for processing, under their terms. Your key is stored encrypted on this device only.</string>
+    <string name="key_dialog_ready">AI ready — using %1$s.</string>
+    <string name="key_dialog_no_key">No key set. AI import &amp; tutor are off; offline list import still works.</string>
+    <string name="key_field_label">%1$s API key</string>
+    <string name="key_dialog_saved">Saved. Using %1$s.</string>
+    <string name="key_dialog_cleared">%1$s key cleared.</string>
+    <string name="key_dialog_clear">Clear key</string>
+    <string name="key_dialog_need_key">Need a key?</string>
+    <string name="key_dialog_get_from">Get one from %1$s</string>
+    <string name="open_browser_failed">Could not open browser</string>
+
+    <!-- Learning goal dialog -->
+    <string name="goal_apply">Apply Goal</string>
+    <string name="goal_title">My Study Goal Profile</string>
+    <string name="goal_blurb">Your learning goal shapes AI card generation, the tutor\'s replies, and deck suggestions.</string>
+    <string name="goal_native_label">Native Language (Source)</string>
+    <string name="goal_target_label">Language to Learn (Target)</string>
+    <string name="goal_native_hint">e.g. English</string>
+    <string name="goal_target_hint">e.g. Swedish</string>
+    <string name="goal_empty">Languages cannot be empty!</string>
+    <string name="goal_updated">Learning goal updated to %1$s!</string>
+
+    <!-- Tutor sheet -->
+    <string name="tutor_clear_title">Clear tutor chat history?</string>
+    <string name="tutor_clear_body">This permanently deletes this conversation with the AI Tutor. This cannot be undone.</string>
+    <string name="tutor_clear_confirm">Clear</string>
+    <string name="tutor_header_title">AI Adaptive Tutor</string>
+    <string name="tutor_header_subtitle">Real-time semantic guidance</string>
+    <string name="tutor_clear_chat">Clear Chat</string>
+    <string name="action_close">Close</string>
+    <string name="tutor_empty_title">How can I support your study today?</string>
+    <string name="tutor_empty_body">Ask for pronunciation, custom example sentences, or cultural origin hints in any language!</string>
+    <string name="tutor_thinking">Tutor is thinking…</string>
+    <string name="tutor_input_hint">Ask AI in any language…</string>
+    <string name="action_send">Send</string>
+    <string name="tutor_chip_pronounce">💡 Pronounce</string>
+    <string name="tutor_chip_examples">📚 Examples</string>
+    <string name="tutor_chip_origin">🗺️ Origin</string>
 
 </resources>
