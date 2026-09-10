@@ -29,6 +29,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Progress
 import io.github.playfoundryhq.adaptiveflow.data.pdf.PdfTextExtractor
 import io.github.playfoundryhq.adaptiveflow.di.AppContainer
 import io.github.playfoundryhq.adaptiveflow.domain.DeckMerge
+import io.github.playfoundryhq.adaptiveflow.domain.ImportPipeline
 import io.github.playfoundryhq.adaptiveflow.domain.SrsScheduler
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger as Log
 import kotlinx.coroutines.Dispatchers
@@ -71,6 +72,20 @@ class StudyViewModel(
     private val tts = container.tts
     private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 
+    private val importPipeline = ImportPipeline(
+        appContext = getApplication(),
+        repository = repository,
+        moshi = moshi,
+        scope = viewModelScope,
+        activeProvider = ::activeProvider,
+        providerDisplayName = { _aiProviderId.value.displayName },
+        noKeyMessage = ::noKeyMessage,
+        friendlyError = ::friendlyAiError,
+        nativeLanguage = { _nativeLanguage.value },
+        targetLanguage = { _targetLanguage.value },
+    )
+    val importState = importPipeline.state
+
     // ---- DB-backed state ----
     val allDecks: StateFlow<List<DeckWithCards>>
 
@@ -93,8 +108,6 @@ class StudyViewModel(
     private val _isAiLoading = MutableStateFlow(false)
     val isAiLoading: StateFlow<Boolean> = _isAiLoading.asStateFlow()
 
-    private val _importState = MutableStateFlow<ImportState>(ImportState.Idle)
-    val importState: StateFlow<ImportState> = _importState.asStateFlow()
 
     // ---- Session performance ----
     private val _sessionCorrectCount = MutableStateFlow(0)
@@ -106,8 +119,8 @@ class StudyViewModel(
     private val _consecutiveIncorrectStreak = MutableStateFlow(0)
     val consecutiveIncorrectStreak: StateFlow<Int> = _consecutiveIncorrectStreak.asStateFlow()
 
-    private val _flippedCardIds = MutableStateFlow<Set<Int>>(emptySet())
-    val flippedCardIds: StateFlow<Set<Int>> = _flippedCardIds.asStateFlow()
+    private val _flippedCardIds = MutableStateFlow<Set<Long>>(emptySet())
+    val flippedCardIds: StateFlow<Set<Long>> = _flippedCardIds.asStateFlow()
 
     // ---- TTS (owned by the app-scoped TtsController) ----
     val isTtsReady: StateFlow<Boolean> = tts.isReady
@@ -123,37 +136,8 @@ class StudyViewModel(
     enum class LearningMode { Flashcard, Quiz }
     enum class ConfidenceLevel { LOW, MEDIUM, HIGH }
 
-    private val _cardModes = MutableStateFlow<Map<Int, LearningMode>>(emptyMap())
-    val cardModes: StateFlow<Map<Int, LearningMode>> = _cardModes.asStateFlow()
-
-    sealed interface ImportState {
-        data object Idle : ImportState
-        data class Loading(val message: String = "Working…") : ImportState
-        /** A merge is staged and waiting for the user to confirm. */
-        data class MergePreview(val plan: MergePlan) : ImportState
-        data class Success(val deckName: String, val undoable: Boolean = false) : ImportState
-        data class Error(val message: String) : ImportState
-    }
-
-    data class MergePlan(
-        val targetDeckName: String,
-        val newCount: Int,
-        val enrichCount: Int,
-        val skipCount: Int,
-    ) {
-        val total get() = newCount + enrichCount + skipCount
-    }
-
-    private class PendingMerge(val deck: Deck, val plan: DeckMerge.Plan)
-
-    private class ImportUndo(
-        val insertedCardIds: List<Int>,
-        /** card id → its notes before enrichment. */
-        val restoredNotes: List<Pair<Int, String?>>,
-    )
-
-    private var pendingMerge: PendingMerge? = null
-    private var lastUndo: ImportUndo? = null
+    private val _cardModes = MutableStateFlow<Map<Long, LearningMode>>(emptyMap())
+    val cardModes: StateFlow<Map<Long, LearningMode>> = _cardModes.asStateFlow()
 
     // ---- AI provider + keys ----
     private val _aiProviderId = MutableStateFlow(settings.providerId)
@@ -234,133 +218,6 @@ class StudyViewModel(
         }
     }
 
-    // ---- JSON extraction / repair ----
-
-    private fun cleanAndExtractJson(raw: String): String {
-        var text = raw.trim()
-        if (text.startsWith("```")) {
-            val firstNewLine = text.indexOf('\n')
-            if (firstNewLine != -1) text = text.substring(firstNewLine).trim()
-            if (text.endsWith("```")) text = text.substring(0, text.length - 3).trim()
-        }
-        val firstBrace = text.indexOf('{')
-        val firstBracket = text.indexOf('[')
-        if (firstBrace != -1 && (firstBracket == -1 || firstBrace < firstBracket)) {
-            val lastBrace = text.lastIndexOf('}')
-            if (lastBrace > firstBrace) return text.substring(firstBrace, lastBrace + 1)
-        } else if (firstBracket != -1) {
-            val lastBracket = text.lastIndexOf(']')
-            if (lastBracket > firstBracket) return text.substring(firstBracket, lastBracket + 1)
-        }
-        return text
-    }
-
-    private fun robustParseJsonDeck(jsonText: String): ParsedDeck {
-        val trimmed = jsonText.trim()
-        runCatching {
-            moshi.adapter(ParsedDeck::class.java).fromJson(trimmed)?.takeIf { it.cards.isNotEmpty() }
-        }.getOrNull()?.let { return it }
-
-        runCatching {
-            val type = Types.newParameterizedType(List::class.java, ParsedCard::class.java)
-            moshi.adapter<List<ParsedCard>>(type).fromJson(trimmed)?.takeIf { it.isNotEmpty() }
-        }.getOrNull()?.let { return ParsedDeck(cards = it) }
-
-        throw AiException("The AI response was not valid flashcard JSON.", AiException.Kind.EMPTY)
-    }
-
-    private fun isYouTubeUrl(text: String): Boolean =
-        Regex("""(youtube\.com/(watch|shorts)|youtu\.be/|m\.youtube\.com)""", RegexOption.IGNORE_CASE)
-            .containsMatchIn(text)
-
-    private fun looksLikeUrlFragment(text: String): Boolean {
-        val t = text.trim()
-        return t.startsWith("http", true) || t.startsWith("//") ||
-            t.equals("http", true) || t.equals("https", true) ||
-            t.contains("youtu.be") || t.contains("youtube.com")
-    }
-
-    private fun filterOutUrlEchoCards(cards: List<ParsedCard>): List<ParsedCard> =
-        cards.filterNot { looksLikeUrlFragment(it.front) || looksLikeUrlFragment(it.back) }
-
-    // ---- PDF chunk parsing with recursive subdivision ----
-
-    private suspend fun processPagesChunkRecursive(
-        pages: List<String>,
-        chunkLabel: String,
-        provider: AiProvider,
-        topicHint: String,
-        densityInstruction: String,
-        maxAttempts: Int = 3,
-    ): ParsedDeck {
-        var attempts = 0
-        var lastError: Exception? = null
-        var shouldSubdivide = false
-
-        while (attempts < maxAttempts) {
-            attempts++
-            setImportMessage(
-                if (attempts > 1) "Parsing chunk $chunkLabel (${pages.size} pgs)… attempt $attempts/$maxAttempts"
-                else "Parsing chunk $chunkLabel (${pages.size} pgs)…"
-            )
-            try {
-                val chunkText = pages.joinToString("\n\n")
-                val system = Prompts.importSystem(_nativeLanguage.value, _targetLanguage.value, densityInstruction, chunkLabel)
-                val user = Prompts.importUser("Document text chunk:\n$chunkText", topicHint, densityInstruction)
-                val responseText = provider.generateStructured(system, user)
-                return robustParseJsonDeck(cleanAndExtractJson(responseText))
-            } catch (e: Exception) {
-                lastError = e
-                Log.e("StudyViewModel", "chunk $chunkLabel attempt $attempts/$maxAttempts failed", e)
-                val kind = (e as? AiException)?.kind
-
-                if (kind == AiException.Kind.AUTH || kind == AiException.Kind.BAD_REQUEST) throw e
-
-                if (kind == AiException.Kind.PAYLOAD_TOO_LARGE) {
-                    val canSplit = pages.size > 1 ||
-                        (pages.size == 1 && pages.first().split("\n\n").count { it.isNotBlank() } > 1)
-                    if (canSplit) { shouldSubdivide = true; break }
-                    throw AiException("A single page is too dense for the model.", AiException.Kind.PAYLOAD_TOO_LARGE)
-                }
-
-                if (attempts < maxAttempts) {
-                    val backoff = when (kind) {
-                        AiException.Kind.RATE_LIMIT ->
-                            ((e as AiException).retryAfterMs ?: (10_000L * (1 shl (attempts - 1)))) + 1000L
-                        AiException.Kind.TRANSIENT, AiException.Kind.NETWORK ->
-                            ((e as? AiException)?.retryAfterMs ?: (5_000L * attempts)) + 1000L
-                        else -> 2_000L * attempts
-                    }
-                    setImportMessage("Retrying chunk $chunkLabel in ${backoff / 1000}s (attempt $attempts/$maxAttempts)…")
-                    delay(backoff)
-                }
-            }
-        }
-
-        if (shouldSubdivide) {
-            setImportMessage("Content too dense — splitting into smaller sections…")
-            delay(600)
-            val (left, right) = if (pages.size > 1) {
-                val mid = pages.size / 2
-                pages.subList(0, mid) to pages.subList(mid, pages.size)
-            } else {
-                val paras = pages.first().split("\n\n").filter { it.isNotBlank() }
-                val mid = paras.size / 2
-                listOf(paras.subList(0, mid).joinToString("\n\n")) to listOf(paras.subList(mid, paras.size).joinToString("\n\n"))
-            }
-            val l = processPagesChunkRecursive(left, "$chunkLabel·A", provider, topicHint, densityInstruction, maxAttempts)
-            val r = processPagesChunkRecursive(right, "$chunkLabel·B", provider, topicHint, densityInstruction, maxAttempts)
-            return ParsedDeck(
-                deckName = l.deckName.ifBlank { r.deckName },
-                sourceLanguage = l.sourceLanguage.ifBlank { r.sourceLanguage },
-                targetLanguage = l.targetLanguage.ifBlank { r.targetLanguage },
-                cards = l.cards + r.cards,
-            )
-        }
-        throw Exception(lastError?.message ?: "Chunk $chunkLabel failed all attempts.")
-    }
-
-    // ---- Gamification (Room-backed since schema v2) ----
 
     val progress: StateFlow<Progress> = repository.progressFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Progress())
@@ -421,10 +278,10 @@ class StudyViewModel(
         // Restore an in-progress study session after process death. The
         // reordered queue and per-session counters are ephemeral by design —
         // we just reopen the same deck with a fresh queue.
-        savedState.get<Int>(KEY_ACTIVE_DECK)?.let { deckId ->
+        savedState.get<Long>(KEY_ACTIVE_DECK)?.let { deckId ->
             viewModelScope.launch {
                 repository.getDeckById(deckId)?.let { selectDeck(it) }
-                    ?: savedState.remove<Int>(KEY_ACTIVE_DECK)
+                    ?: savedState.remove<Long>(KEY_ACTIVE_DECK)
             }
         }
     }
@@ -453,7 +310,7 @@ class StudyViewModel(
     }
 
     fun clearActiveDeck() {
-        savedState.remove<Int>(KEY_ACTIVE_DECK)
+        savedState.remove<Long>(KEY_ACTIVE_DECK)
         _currentDeck.value = null
         _currentFlashcards.value = emptyList()
         _chatLogs.value = emptyList()
@@ -552,11 +409,11 @@ class StudyViewModel(
 
     fun togglePlayMode(active: Boolean) { _isPlayModeActive.value = active }
 
-    fun getLearningModeForCard(cardId: Int): LearningMode =
+    fun getLearningModeForCard(cardId: Long): LearningMode =
         if (!_isPlayModeActive.value) LearningMode.Flashcard
         else _cardModes.value[cardId] ?: LearningMode.Flashcard
 
-    fun setLearningModeForCard(cardId: Int, mode: LearningMode) {
+    fun setLearningModeForCard(cardId: Long, mode: LearningMode) {
         _cardModes.value = _cardModes.value.toMutableMap().apply { put(cardId, mode) }
     }
 
@@ -599,317 +456,8 @@ class StudyViewModel(
         }
     }
 
-    // ---- save / merge ----
 
-    /**
-     * A brand-new deck writes straight away. A merge into an existing deck is
-     * *staged* — [ImportState.MergePreview] shows the user what will change and
-     * [confirmMerge] / [cancelMerge] decide. Merges are undoable via
-     * [undoLastImport]. Merge math lives in [DeckMerge].
-     */
-    private suspend fun saveOrMergeCards(
-        targetDeckId: Int?,
-        deckName: String,
-        sourceLanguage: String?,
-        targetLanguage: String?,
-        parsedCards: List<ParsedCard>,
-    ): ImportState {
-        // The Master Vocabulary Pool is a singleton — an import that names it
-        // (e.g. re-importing an export of it) merges rather than making a second,
-        // undeletable copy.
-        val existingDeck = targetDeckId?.let { repository.getDeckById(it) }
-            ?: if (deckName == MASTER_POOL_NAME) {
-                repository.allDecksFlowSnapshot().firstOrNull { it.name == MASTER_POOL_NAME }
-            } else null
-        if (existingDeck != null) {
-            val existingCards = repository.getFlashcardsForDeck(existingDeck.id)
-            val plan = DeckMerge.plan(
-                existingCards,
-                parsedCards.map { Triple(it.front, it.back, it.notes) },
-            )
-            pendingMerge = PendingMerge(existingDeck, plan)
-            return ImportState.MergePreview(
-                MergePlan(existingDeck.name, plan.toInsert.size, plan.toEnrich.size, plan.skipCount)
-            )
-        }
 
-        val newDeckId = repository.insertDeck(Deck(name = deckName, sourceLanguage = sourceLanguage, targetLanguage = targetLanguage)).toInt()
-        repository.insertFlashcards(parsedCards.map { Flashcard(deckId = newDeckId, front = it.front, back = it.back, notes = it.notes) })
-        lastUndo = null
-        return ImportState.Success(deckName)
-    }
-
-    fun confirmMerge() {
-        val p = pendingMerge ?: return
-        pendingMerge = null
-        _importState.value = ImportState.Loading("Merging into ${p.deck.name}…")
-        viewModelScope.launch {
-            val insertedIds = p.plan.toInsert.map {
-                repository.insertFlashcard(
-                    Flashcard(deckId = p.deck.id, front = it.front, back = it.back, notes = it.notes)
-                ).toInt()
-            }
-            val restored = p.plan.toEnrich.map { e ->
-                repository.updateFlashcard(e.card.copy(notes = e.mergedNotes))
-                e.card.id to e.card.notes
-            }
-            lastUndo = ImportUndo(insertedIds, restored)
-            _importState.value = ImportState.Success(p.deck.name, undoable = true)
-        }
-    }
-
-    fun cancelMerge() {
-        pendingMerge = null
-        _importState.value = ImportState.Idle
-    }
-
-    fun undoLastImport() {
-        val u = lastUndo ?: return
-        lastUndo = null
-        viewModelScope.launch {
-            u.insertedCardIds.forEach { id ->
-                repository.getFlashcardById(id)?.let { repository.deleteFlashcard(it) }
-            }
-            u.restoredNotes.forEach { (id, notes) ->
-                repository.getFlashcardById(id)?.let { repository.updateFlashcard(it.copy(notes = notes)) }
-            }
-            _importState.value = ImportState.Idle
-        }
-    }
-
-    // ---- honest offline "word: meaning" list parsing ----
-
-    private fun parseRawTextLocally(rawText: String, topicHint: String): ParsedDeck? {
-        val lines = rawText.lines().map { it.trim() }
-            .filter { it.isNotEmpty() && !it.startsWith("#") && !it.startsWith("//") }
-        if (lines.isEmpty()) return null
-
-        var colon = 0; var hyphen = 0; var eq = 0
-        for (l in lines) when {
-            l.contains(":") -> colon++
-            l.contains(" - ") || l.contains(" – ") -> hyphen++
-            l.contains("=") -> eq++
-        }
-        val sep = when {
-            colon >= 1 -> ":"
-            hyphen >= 1 -> "-"
-            eq >= 1 -> "="
-            else -> return null
-        }
-        val cards = lines.mapNotNull { line ->
-            val parts = line.split(sep, limit = 2)
-            if (parts.size != 2) return@mapNotNull null
-            val front = parts[0].trim().removePrefix("-").removePrefix("*").trim()
-            val back = parts[1].trim()
-            if (front.isEmpty() || back.isEmpty()) null else ParsedCard(front, back, "")
-        }
-        if (cards.isEmpty()) return null
-        return ParsedDeck(
-            deckName = topicHint.ifBlank { "📋 Imported list" },
-            sourceLanguage = "Auto",
-            targetLanguage = "English",
-            cards = cards,
-        )
-    }
-
-    // ---- file helpers ----
-
-    private fun copyUriToCacheFile(context: Context, uri: android.net.Uri): File? = runCatching {
-        if (uri.scheme == "file") {
-            uri.path?.let { File(it) }?.takeIf { it.isFile }?.let { return it }
-        }
-        val ext = fileExtension(context, uri)
-        val out = File(context.cacheDir, "import_${System.currentTimeMillis()}$ext")
-        context.contentResolver.openInputStream(uri)?.use { input ->
-            out.outputStream().use { input.copyTo(it) }
-        }
-        out.takeIf { it.length() > 0 }
-    }.onFailure { Log.e("StudyViewModel", "copyUriToCacheFile failed", it) }.getOrNull()
-
-    private fun fileExtension(context: Context, uri: android.net.Uri): String {
-        val mime = context.contentResolver.getType(uri).orEmpty()
-        return when {
-            mime.contains("pdf", true) -> ".pdf"
-            mime.contains("csv", true) -> ".csv"
-            mime.contains("text", true) || mime.contains("plain", true) -> ".txt"
-            uri.path?.substringAfterLast('.', "")?.isNotEmpty() == true -> ".${uri.path!!.substringAfterLast('.')}"
-            else -> ""
-        }
-    }
-
-    // ---- IMPORT ----
-
-    fun importDeckFromRawText(
-        rawText: String,
-        topicHint: String = "",
-        fileUri: android.net.Uri? = null,
-        mergeDeckId: Int? = null,
-        density: String = "Balanced",
-    ) {
-        if (rawText.isBlank() && fileUri == null) return
-
-        if (fileUri == null && isYouTubeUrl(rawText.trim()) && topicHint.isBlank()) {
-            _importState.value = ImportState.Error(
-                "A YouTube link alone isn't enough — AdaptiveFlow can't read the video's captions. " +
-                    "Add a Focus/Topic hint (e.g. \"Swedish hobbies vocabulary\") describing what it covers."
-            )
-            return
-        }
-
-        _importState.value = ImportState.Loading("Preparing…")
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val input = rawText.trim()
-
-                // A .json / .txt file dropped in the picker that is itself an
-                // exported deck: read it here so it re-imports offline like paste.
-                val fileText: String? = if (fileUri != null) {
-                    val ctx = getApplication<Application>()
-                    val mime = ctx.contentResolver.getType(fileUri).orEmpty()
-                    val looksBinary = mime.contains("pdf", true) || fileUri.toString().endsWith(".pdf", true)
-                    if (looksBinary) null else runCatching {
-                        ctx.contentResolver.openInputStream(fileUri)?.bufferedReader()?.use { it.readText() }?.take(500_000)
-                    }.getOrNull()
-                } else null
-
-                // 1. A ready-made JSON deck — pasted, or a loaded export file.
-                val jsonSource = (fileText ?: input).takeIf { it.isNotBlank() }
-                if (jsonSource != null) {
-                    val cleaned = jsonSource.removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
-                    runCatching { moshi.adapter(ParsedDeck::class.java).fromJson(cleaned) }
-                        .getOrNull()?.takeIf { it.cards.isNotEmpty() }?.let { deck ->
-                            setImportMessage("JSON deck detected — importing offline…")
-                            _importState.value = saveOrMergeCards(mergeDeckId, deck.deckName.ifBlank { "📋 Imported deck" }, deck.sourceLanguage, deck.targetLanguage, deck.cards)
-                            return@launch
-                        }
-                }
-
-                // 2. Honest offline: a plain "word: meaning" list.
-                if (input.isNotEmpty() && fileUri == null && !isYouTubeUrl(input)) {
-                    parseRawTextLocally(input, topicHint)?.let { local ->
-                        setImportMessage("Importing list offline…")
-                        _importState.value = saveOrMergeCards(mergeDeckId, local.deckName, local.sourceLanguage, local.targetLanguage, local.cards)
-                        return@launch
-                    }
-                }
-
-                // 3. Everything else needs a real AI provider.
-                val provider = activeProvider()
-                if (provider == null) {
-                    _importState.value = ImportState.Error(noKeyMessage())
-                    return@launch
-                }
-
-                var attachedText = rawText
-                var pdfPageTexts: List<String>? = null
-                var pdfBytes: ByteArray? = null
-
-                if (fileUri != null) {
-                    val ctx = getApplication<Application>()
-                    val tempFile = copyUriToCacheFile(ctx, fileUri)
-                        ?: throw Exception("Could not read the selected file.")
-                    try {
-                        val mime = ctx.contentResolver.getType(fileUri).orEmpty()
-                        val isPdf = mime.contains("pdf", true) || fileUri.toString().endsWith(".pdf", true)
-                        if (isPdf) {
-                            val pages = PdfTextExtractor.extractPages(tempFile) { p, total ->
-                                setImportMessage("Extracting text from PDF page $p of $total…")
-                            }
-                            if (pages.sumOf { it.length } > 100) {
-                                pdfPageTexts = pages
-                            } else if (provider.supportsPdfBytes) {
-                                pdfBytes = tempFile.readBytes().takeIf { it.isNotEmpty() }
-                                    ?: throw Exception("The PDF is empty or unreadable.")
-                            } else {
-                                throw Exception(
-                                    "This looks like a scanned PDF with no selectable text. " +
-                                        "${_aiProviderId.value.displayName} can't read those — switch to Gemini in Settings, or use a text-based PDF."
-                                )
-                            }
-                        } else {
-                            val text = (fileText ?: tempFile.inputStream().bufferedReader().use { it.readText() }).take(150_000)
-                            if (text.isBlank()) throw Exception("The selected text file is empty.")
-                            attachedText = if (attachedText.isBlank()) text else "$attachedText\n\n--- Attached file ---\n$text"
-                        }
-                    } finally {
-                        runCatching { tempFile.delete() }
-                    }
-                }
-
-                val densityInstruction = densityInstruction(density, chunked = pdfPageTexts != null)
-
-                if (pdfPageTexts != null) {
-                    val chunkSize = when {
-                        pdfPageTexts.size <= 5 -> 1
-                        pdfPageTexts.size <= 15 -> 3
-                        pdfPageTexts.size <= 30 -> 5
-                        pdfPageTexts.size <= 60 -> 8
-                        else -> 12
-                    }
-                    val chunks = pdfPageTexts.chunked(chunkSize)
-                    val cards = mutableListOf<ParsedCard>()
-                    var deckName = ""
-                    var srcLang = ""
-                    var tgtLang = ""
-                    chunks.forEachIndexed { i, chunk ->
-                        val startPage = i * chunkSize + 1
-                        val endPage = minOf((i + 1) * chunkSize, pdfPageTexts!!.size)
-                        val result = processPagesChunkRecursive(
-                            chunk, "${i + 1}/${chunks.size} (p$startPage–$endPage)", provider, topicHint, densityInstruction
-                        )
-                        if (deckName.isBlank()) {
-                            deckName = result.deckName.takeIf { it.isNotBlank() && !it.contains("PDF", true) }
-                                ?.let { if (it.startsWith("📄")) it else "📄 $it" }
-                                ?: "📄 " + topicHint.ifBlank { "Document" }
-                            srcLang = result.sourceLanguage
-                            tgtLang = result.targetLanguage
-                        }
-                        cards += result.cards
-                    }
-                    if (cards.isEmpty()) throw Exception("No flashcards could be extracted from the PDF.")
-                    _importState.value = saveOrMergeCards(mergeDeckId, deckName, srcLang, tgtLang, filterOutUrlEchoCards(cards))
-                    return@launch
-                }
-
-                // Single-shot: text / YouTube / scanned-PDF-bytes
-                setImportMessage("Analysing and building your deck…")
-                val system = Prompts.importSystem(_nativeLanguage.value, _targetLanguage.value, densityInstruction)
-                val user = Prompts.importUser(attachedText, topicHint, densityInstruction)
-                val responseText = provider.generateStructured(system, user, pdfBytes = pdfBytes)
-                val parsed = robustParseJsonDeck(cleanAndExtractJson(responseText))
-                val realCards = filterOutUrlEchoCards(parsed.cards)
-                if (realCards.isEmpty()) {
-                    _importState.value = ImportState.Error(
-                        if (isYouTubeUrl(rawText.trim()))
-                            "Couldn't build a deck from that video — try a more specific Focus/Topic hint."
-                        else "Couldn't extract any flashcards. Check your input has real content."
-                    )
-                    return@launch
-                }
-                _importState.value = saveOrMergeCards(
-                    mergeDeckId,
-                    parsed.deckName.ifBlank { "📄 " + topicHint.ifBlank { "Import" } },
-                    parsed.sourceLanguage, parsed.targetLanguage, realCards,
-                )
-            } catch (e: AiException) {
-                Log.e("StudyViewModel", "import AI error (${e.kind})", e)
-                _importState.value = ImportState.Error(friendlyAiError(e))
-            } catch (e: Exception) {
-                Log.e("StudyViewModel", "import failed", e)
-                _importState.value = ImportState.Error(e.message ?: "Import failed.")
-            }
-        }
-    }
-
-    private fun densityInstruction(density: String, chunked: Boolean): String = when (density) {
-        "Focused" -> if (chunked) "Extract 8–10 high-yield cards from this chunk."
-        else "For short input generate 10–15 cards; for long input 15–20 premium cards."
-        "Exhaustive" -> "Extract every unique term, phrase, definition and formula. Do not cap the count."
-        else -> if (chunked) "Extract all unique vocabulary and key definitions — aim for 15–25 cards, don't truncate."
-        else "For short input generate 15–25 cards; for long input extract everything found."
-    }
-
-    fun resetImportState() { _importState.value = ImportState.Idle }
 
     // ---- TUTOR ----
 
@@ -958,10 +506,20 @@ class StudyViewModel(
         viewModelScope.launch { repository.clearChatLogsForDeck(deck.id) }
     }
 
-    // ---- import status helpers ----
+    // ---- import (delegates to ImportPipeline) ----
 
-    /** StateFlow writes are thread-safe; no Main-dispatcher hop needed. */
-    private fun setImportMessage(msg: String) { _importState.value = ImportState.Loading(msg) }
+    fun importDeckFromRawText(
+        rawText: String,
+        topicHint: String = "",
+        fileUri: android.net.Uri? = null,
+        mergeDeckId: Long? = null,
+        density: String = "Balanced",
+    ) = importPipeline.import(rawText, topicHint, fileUri, mergeDeckId, density)
+
+    fun confirmMerge() = importPipeline.confirmMerge()
+    fun cancelMerge() = importPipeline.cancelMerge()
+    fun undoLastImport() = importPipeline.undoLastImport()
+    fun resetImportState() = importPipeline.reset()
 
     override fun onCleared() {
         super.onCleared()

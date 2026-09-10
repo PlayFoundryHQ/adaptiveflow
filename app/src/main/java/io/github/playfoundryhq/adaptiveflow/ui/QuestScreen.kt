@@ -882,7 +882,7 @@ fun ResponsiveVocabularyGrid(
 ) {
     val c = AppTheme.colors
     // State collection managing individual card flips
-    var flippedCardIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
+    var flippedCardIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 130.dp),

@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">AdaptiveFlow</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_decks">Decks</string>
+    <string name="nav_quest">Quest</string>
+    <string name="nav_import">Import</string>
+    <string name="nav_guide">Guide</string>
+    <string name="nav_decks_desc">Decks Dashboard</string>
+    <string name="nav_quest_desc">Gamified Path</string>
+    <string name="nav_import_desc">One-Tap Import / Create</string>
+    <string name="nav_guide_desc">Visual Onboarding Tutorial</string>
+
+    <!-- Guide / onboarding -->
+    <string name="guide_tagline">Universal Semantic Learning</string>
+    <string name="guide_hero_tag">ONE GOAL · EVERY DECK</string>
+    <string name="guide_pillar_paste_title">Paste It, Study It</string>
+    <string name="guide_pillar_paste_desc">Paste text or a word list, or load a PDF / TXT / CSV. With your own API key, the AI turns it into flashcard pairs. No key? A plain \"word: meaning\" list still imports offline.</string>
+    <string name="guide_pillar_goal_title">Set Your Goal Once</string>
+    <string name="guide_pillar_goal_desc">Choose your native and target language on the Quest tab. Every new deck, quiz, and tutor reply is tuned to that goal.</string>
+    <string name="guide_pillar_tutor_title">AI Tutor</string>
+    <string name="guide_pillar_tutor_desc">Stuck on a card? Open the tutor chat for pronunciation tips, usage examples, and simpler explanations. Needs an API key.</string>
+
 </resources>
