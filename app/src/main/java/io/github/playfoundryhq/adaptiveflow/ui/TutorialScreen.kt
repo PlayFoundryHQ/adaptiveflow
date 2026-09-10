@@ -52,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -109,7 +110,7 @@ fun TutorialTab() {
         item {
             // Header
             Text(
-                text = "AdaptiveFlow",
+                text = stringResource(R.string.app_name),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = FontFamily.SansSerif,
@@ -119,7 +120,7 @@ fun TutorialTab() {
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Universal Semantic Learning",
+                text = stringResource(R.string.guide_tagline),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = c.textSecondary,
@@ -139,7 +140,7 @@ fun TutorialTab() {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Image(
                         painter = painterResource(id = heroResId),
-                        contentDescription = "AdaptiveFlow Onboarding Hero Scene",
+                        contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -153,7 +154,7 @@ fun TutorialTab() {
                             )
                     )
                     Text(
-                        text = "ONE GOAL · EVERY DECK",
+                        text = stringResource(R.string.guide_hero_tag),
                         color = Color(0xFF38BDF8),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
@@ -174,20 +175,20 @@ fun TutorialTab() {
             ) {
                 TutorialPillarItem(
                     icon = Icons.Default.AllInclusive,
-                    title = "Paste It, Study It",
-                    desc = "Paste text or a word list, or load a PDF / TXT / CSV. With your own API key, the AI turns it into flashcard pairs. No key? A plain \"word: meaning\" list still imports offline."
+                    title = stringResource(R.string.guide_pillar_paste_title),
+                    desc = stringResource(R.string.guide_pillar_paste_desc)
                 )
 
                 TutorialPillarItem(
                     icon = Icons.Default.CenterFocusStrong,
-                    title = "Set Your Goal Once",
-                    desc = "Choose your native and target language on the Quest tab. Every new deck, quiz, and tutor reply is tuned to that goal."
+                    title = stringResource(R.string.guide_pillar_goal_title),
+                    desc = stringResource(R.string.guide_pillar_goal_desc)
                 )
 
                 TutorialPillarItem(
                     icon = Icons.Default.SupportAgent,
-                    title = "AI Tutor",
-                    desc = "Stuck on a card? Open the tutor chat for pronunciation tips, usage examples, and simpler explanations. Needs an API key."
+                    title = stringResource(R.string.guide_pillar_tutor_title),
+                    desc = stringResource(R.string.guide_pillar_tutor_desc)
                 )
             }
         }

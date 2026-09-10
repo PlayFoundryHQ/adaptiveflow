@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,14 +85,14 @@ class MainActivity : ComponentActivity() {
 enum class TopRoute(
     val route: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val label: String,
-    val contentDescription: String,
+    @androidx.annotation.StringRes val label: Int,
+    @androidx.annotation.StringRes val contentDescription: Int,
     val testTag: String,
 ) {
-    Decks("decks", Icons.Default.Layers, "Decks", "Decks Dashboard", "nav_decks_tab"),
-    Quest("quest", Icons.Default.Explore, "Quest", "Gamified Path", "nav_path_tab"),
-    Import("import", Icons.Default.AddCircle, "Import", "One-Tap Import / Create", "nav_import_tab"),
-    Guide("guide", Icons.Default.Lightbulb, "Guide", "Visual Onboarding Tutorial", "nav_tutorial_tab"),
+    Decks("decks", Icons.Default.Layers, R.string.nav_decks, R.string.nav_decks_desc, "nav_decks_tab"),
+    Quest("quest", Icons.Default.Explore, R.string.nav_quest, R.string.nav_quest_desc, "nav_path_tab"),
+    Import("import", Icons.Default.AddCircle, R.string.nav_import, R.string.nav_import_desc, "nav_import_tab"),
+    Guide("guide", Icons.Default.Lightbulb, R.string.nav_guide, R.string.nav_guide_desc, "nav_tutorial_tab"),
 }
 
 private const val STUDY_ROUTE = "study"
@@ -176,10 +177,10 @@ fun ZeroLanguageNavigationBar(
                 selected = selected,
                 onClick = { onSelect(item) },
                 modifier = Modifier.testTag(item.testTag),
-                icon = { Icon(item.icon, contentDescription = item.contentDescription, tint = tint) },
+                icon = { Icon(item.icon, contentDescription = stringResource(item.contentDescription), tint = tint) },
                 label = {
                     Text(
-                        item.label,
+                        stringResource(item.label),
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                         fontSize = 11.sp,
                         color = tint
