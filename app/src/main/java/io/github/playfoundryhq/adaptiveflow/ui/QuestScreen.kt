@@ -182,7 +182,7 @@ fun PathTab(
                             Text("👑", fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = crownsCount.toString(),
+                                text = stringResource(R.string.quest_crowns_value, crownsCount),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 16.sp,
                                 color = c.textPrimary
@@ -216,7 +216,7 @@ fun PathTab(
                     ) {
                         Icon(Icons.Default.Flag, contentDescription = null, tint = c.warning, modifier = Modifier.size(16.dp))
                         Text(
-                            text = stringResource(R.string.goal_pair, Languages.label(nativeLanguage), Languages.label(targetLanguage)),
+                            text = stringResource(R.string.goal_pair, Languages.shortLabel(nativeLanguage), Languages.shortLabel(targetLanguage)),
                             color = c.textPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold,
                             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f)
                         )

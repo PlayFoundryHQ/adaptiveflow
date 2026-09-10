@@ -49,6 +49,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -1443,6 +1445,9 @@ fun InteractiveFlashcard(
                             letterSpacing = 1.sp
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+                        // The Low→Medium→High scale stays left-to-right regardless of
+                        // UI direction, so its colour order (red→green) never inverts.
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1530,6 +1535,7 @@ fun InteractiveFlashcard(
                                     fontWeight = FontWeight.Bold
                                 )
                             }
+                        }
                         }
                     }
                 }
