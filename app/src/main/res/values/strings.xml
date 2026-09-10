@@ -221,7 +221,7 @@
     <string name="study_fmt_json">JSON</string>
     <string name="study_fmt_csv">CSV</string>
     <string name="study_session_complete">Session Complete!</string>
-    <string name="study_session_complete_body">Outstanding work! You have flipped every card in the **%1$s** deck to help visualize and lock in your vocabulary learning.</string>
+    <string name="study_session_complete_body">Outstanding work! You have flipped every card in the %1$s deck to help visualize and lock in your vocabulary learning.</string>
     <string name="study_total_cards">Total Cards</string>
     <string name="study_correct">Correct</string>
     <string name="study_incorrect">Incorrect</string>
