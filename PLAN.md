@@ -1,12 +1,14 @@
 # AdaptiveFlow — End‑to‑End Audit & Remediation Plan
 
-> Status: audit 2026‑09‑09 · **Phase 0 + Phase‑1 essentials — MERGED (PR #1), v0.1.0 released**. Was on branch
-> `feat/stabilize-and-multi-provider-ai` (see §10 progress log) · Companion
-> project: **Slim** (`../Slim`, `PlayFoundryHQ/Slim`)
+> ## STATUS (2026‑09, v0.7.1): remediation complete.
+> §1–§9 below are the **original audit** (2026‑09‑09) — kept as the record of
+> where the project started. Every P0/P1 finding is fixed and shipped across
+> **PRs #1–#19**. For the current state read
+> [`docs/architecture/overview.md`](docs/architecture/overview.md) and
+> [`CLAUDE.md`](CLAUDE.md); for the per‑PR history see the memory store. What's
+> still open is small and listed in **§11 (parked)** and **§12 (TTS roadmap)**.
 >
-> This document is the single source of truth for getting AdaptiveFlow from
-> "AI‑Studio export that has never had a green build" to "a maintainable,
-> releasable Android app". Every finding has a severity, a file reference, and a fix.
+> Companion project: **Slim** (`../Slim`, `PlayFoundryHQ/Slim`).
 >
 > **User decisions (2026‑09‑09):** (1) support ≥2 AI providers — Gemini **and**
 > DeepSeek; (2) remove the fake "Gemini Nano"; (3) move repo to
@@ -14,10 +16,35 @@
 > (4) stay on the bleeding‑edge toolchain (AGP 9.1 / SDK 36.1); (5) release
 > cadence = model's call → simple "push‑to‑main builds a signed release"
 > (no release‑please); (6) keep the GitHub Pages landing page, update as we go.
+> **(2026‑09, added):** (7) UI localisation ships **English + Persian** only;
+> other locales are parked (§11).
 
 ---
 
 ## 0. TL;DR — the verdict
+
+> **Then vs now.** The 2026‑09‑09 verdict below described a raw AI‑Studio dump
+> that had never built in CI. As of **v0.7.1** every row is resolved:
+>
+> | Dimension | Then | Now |
+> |---|---|---|
+> | Clean‑clone build | ❌ fails at `validateSigningDebug` | ✅ default debug signing |
+> | CI | ❌ 0 green runs ever | ✅ one workflow, green; signed release on `main` |
+> | Architecture | ❌ `MainActivity` 5.3k lines, no nav, no DI | ✅ ~200‑line `NavHost`; one file/screen; `AppContainer`; `navigation-compose`; `SavedStateHandle` |
+> | AI layer | ⚠️ key in APK + `?key=` URL; fake "Gemini Nano" | ✅ `AiProvider` seam, header auth, BYO‑key encrypted, Nano removed |
+> | Data integrity | ❌ canned decks on failure; destructive migration | ✅ honest‑fail import; `exportSchema=true`, real migrations (v3); progress in Room |
+> | Licensing | ❌ iText AGPLv3 | ✅ PdfBox‑Android (Apache‑2.0) |
+> | Theming / i18n | ❌ 0 `stringResource`, dark mode off, `com.example` | ✅ full `strings.xml` + `values-fa` (Persian, RTL), dark mode, real identity |
+> | State persistence | ❌ 0 `rememberSaveable` | ✅ `rememberSaveable` + `SavedStateHandle` |
+> | Tests | ❌ `assertEquals(4, 2+2)` | ✅ real units (SRS, import parsing, merge, retry, languages) + Roborazzi |
+> | Docs | ❌ none | ✅ `CLAUDE.md`, `docs/architecture/`, `docs/tts-options.md`, this file |
+>
+> Remaining work is **feature roadmap**, not remediation: §12 (TTS quality) and
+> the parked items in §11.
+
+---
+
+### Original verdict (2026‑09‑09, historical)
 
 AdaptiveFlow is a **genuinely interesting product** (adaptive, icon‑first language
 flashcards with AI import + AI tutor + spaced repetition + gamification) buried
@@ -659,3 +686,47 @@ fit for the AI-provider diagram, the import-pipeline data-flow, and the CI
 workflow — outputs drop straight into GitHub Pages. Treat generated diagrams as
 review-then-keep drafts, and only draw them once the architecture settles
 (post Phase 2) so they reflect reality.
+
+### PR ledger (2026-09)
+
+Full per-PR detail lives in the memory store
+(`~/.claude/projects/…/memory/adaptiveflow-audit-sep2026.md`). Summary:
+
+| PRs | Releases | Theme |
+|---|---|---|
+| #1 | v0.1.0 | Phase 0 unblock + honesty: green CI, `AiProvider` (Gemini + DeepSeek), Nano removed, iText → PdfBox, Firebase gone, real identity, `SrsScheduler` + tests |
+| #2–#5 | v0.1.1–v0.1.3 | UI split (`MainActivity` 5.3k → ~250), `rememberSaveable` + `SavedStateHandle`, copy-honesty pass, `friendlyAiError` |
+| #6–#10 | v0.1.5–v0.1.8 | colour tokens + **dark mode** (screen by screen), CI speed-up |
+| #11–#12 | v0.1.9–v0.2.0 | deck **export** (JSON/CSV), reversible **merge preview** + undo, privacy note, `AppSnackbar`, sample decks removed |
+| #13 | v0.3.0 | **DI** (`AppContainer`), `TtsController` extracted + overhauled, **gamification → Room** (schema v2) |
+| #14 | v0.4.0 | **navigation-compose**, `ImportPipeline`/`ImportParsing` extracted, Int→Long PKs (schema v3), `strings.xml` scaffold, landing page |
+| #15 | v0.5.0 | **`strings.xml` complete** (every screen + dynamic errors), Roborazzi suite |
+| #16 | v0.5.1 | Session-Complete markdown-literal fix |
+| #17 | v0.6.0 | learner-profile cleanup — language pickers, compact goal pill, first-run |
+| #18 | v0.7.0 | **Persian UI localisation** + per-app language (`LocaleManager`, RTL) |
+| #19 | v0.7.1 | Persian polish — endonym pills, localised digits, LTR rating scale |
+
+---
+
+## 11. Parked (deliberately not doing now)
+
+| Item | Why parked | To revisit if… |
+|---|---|---|
+| **UI locales beyond en + fa** (ar, ru, zh, …) | en + fa covers the primary user (Persian native learning English) and proves the pipeline. Each locale is a real translation + QA cost. | there's demand, or a translation pipeline (Weblate/Crowdin) is set up. Mechanically it's a `values-<code>/strings.xml` + one `Languages` flag. |
+| **Android-13 system "App languages" integration** (`localeConfig` XML + AppCompat `setApplicationLocales`) | The manual `LocaleManager` works to min SDK 24 with no AppCompat and no theme change. System integration would add a dependency + an Activity base-class change (higher risk). | the manual approach proves stable in the field and users ask for the system-settings entry. |
+| **Design-system finish** (U1) — inline `Color(0x…)` / `.dp` literals | Cosmetic; theme tokens + dark mode + full i18n are done, which was the load-bearing part. | a broad visual refactor is worthwhile anyway. |
+| **Canonical release keystore** | The assistant-generated keystore + 4 GH secrets work; recovery files are in the memory dir. | **before a 1.0 tag** — the user must swap in their own keystore. |
+| **Conventional Commits / spotless / ktlint / detekt** (B12, P2) | Not blocking; commit messages are already descriptive. | onboarding contributors. |
+| Play-store-grade README / store listing, real launcher-icon polish | Launcher icon is already custom; README is current (this pass). | preparing a store release. |
+
+## 12. TTS quality roadmap
+
+The system TTS engines are the weak point — Swedish is robotic, English only
+adequate. Full analysis and a three-tier plan (on-device Piper via Sherpa-ONNX ·
+the user's own Gemini key for a premium tier · AvaCore for Persian) is in
+**[`docs/tts-options.md`](docs/tts-options.md)**.
+
+Priority order: **(1)** Tier 1 on-device Piper/Sherpa-ONNX (~2–4 days, the real
+fix, offline + free + private) → **(2)** Tier 3 AvaCore for `fa` (~1 day,
+independent) → **(3)** Tier 2 "Natural AI voice" on the existing Gemini key
+(~1 day, once Tier 1 plumbing exists).
