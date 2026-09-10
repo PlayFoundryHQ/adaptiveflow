@@ -22,7 +22,7 @@ interface StudyDao {
     fun getAllDecksWithCardsFlow(): Flow<List<io.github.playfoundryhq.adaptiveflow.data.model.DeckWithCards>>
 
     @Query("SELECT * FROM decks WHERE id = :id")
-    suspend fun getDeckById(id: Int): Deck?
+    suspend fun getDeckById(id: Long): Deck?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDeck(deck: Deck): Long
@@ -35,13 +35,13 @@ interface StudyDao {
 
     // --- Flashcards ---
     @Query("SELECT * FROM flashcards WHERE deckId = :deckId")
-    fun getFlashcardsForDeckFlow(deckId: Int): Flow<List<Flashcard>>
+    fun getFlashcardsForDeckFlow(deckId: Long): Flow<List<Flashcard>>
 
     @Query("SELECT * FROM flashcards WHERE deckId = :deckId")
-    suspend fun getFlashcardsForDeck(deckId: Int): List<Flashcard>
+    suspend fun getFlashcardsForDeck(deckId: Long): List<Flashcard>
 
     @Query("SELECT * FROM flashcards WHERE id = :id")
-    suspend fun getFlashcardById(id: Int): Flashcard?
+    suspend fun getFlashcardById(id: Long): Flashcard?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFlashcard(flashcard: Flashcard): Long
@@ -57,16 +57,16 @@ interface StudyDao {
 
     // --- Chat Logs ---
     @Query("SELECT * FROM chat_logs WHERE deckId = :deckId ORDER BY timestamp ASC")
-    fun getChatLogsForDeckFlow(deckId: Int): Flow<List<ChatLog>>
+    fun getChatLogsForDeckFlow(deckId: Long): Flow<List<ChatLog>>
 
     @Query("SELECT * FROM chat_logs WHERE deckId = :deckId ORDER BY timestamp ASC")
-    suspend fun getChatLogsForDeck(deckId: Int): List<ChatLog>
+    suspend fun getChatLogsForDeck(deckId: Long): List<ChatLog>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertChatLog(chatLog: ChatLog): Long
 
     @Query("DELETE FROM chat_logs WHERE deckId = :deckId")
-    suspend fun clearChatLogsForDeck(deckId: Int)
+    suspend fun clearChatLogsForDeck(deckId: Long)
 
     // --- Progress (single row, id = 0) ---
     @Query("SELECT * FROM progress WHERE id = 0")

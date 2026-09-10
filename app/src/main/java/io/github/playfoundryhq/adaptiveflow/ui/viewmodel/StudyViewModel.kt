@@ -119,8 +119,8 @@ class StudyViewModel(
     private val _consecutiveIncorrectStreak = MutableStateFlow(0)
     val consecutiveIncorrectStreak: StateFlow<Int> = _consecutiveIncorrectStreak.asStateFlow()
 
-    private val _flippedCardIds = MutableStateFlow<Set<Int>>(emptySet())
-    val flippedCardIds: StateFlow<Set<Int>> = _flippedCardIds.asStateFlow()
+    private val _flippedCardIds = MutableStateFlow<Set<Long>>(emptySet())
+    val flippedCardIds: StateFlow<Set<Long>> = _flippedCardIds.asStateFlow()
 
     // ---- TTS (owned by the app-scoped TtsController) ----
     val isTtsReady: StateFlow<Boolean> = tts.isReady
@@ -136,8 +136,8 @@ class StudyViewModel(
     enum class LearningMode { Flashcard, Quiz }
     enum class ConfidenceLevel { LOW, MEDIUM, HIGH }
 
-    private val _cardModes = MutableStateFlow<Map<Int, LearningMode>>(emptyMap())
-    val cardModes: StateFlow<Map<Int, LearningMode>> = _cardModes.asStateFlow()
+    private val _cardModes = MutableStateFlow<Map<Long, LearningMode>>(emptyMap())
+    val cardModes: StateFlow<Map<Long, LearningMode>> = _cardModes.asStateFlow()
 
     // ---- AI provider + keys ----
     private val _aiProviderId = MutableStateFlow(settings.providerId)
@@ -278,10 +278,10 @@ class StudyViewModel(
         // Restore an in-progress study session after process death. The
         // reordered queue and per-session counters are ephemeral by design —
         // we just reopen the same deck with a fresh queue.
-        savedState.get<Int>(KEY_ACTIVE_DECK)?.let { deckId ->
+        savedState.get<Long>(KEY_ACTIVE_DECK)?.let { deckId ->
             viewModelScope.launch {
                 repository.getDeckById(deckId)?.let { selectDeck(it) }
-                    ?: savedState.remove<Int>(KEY_ACTIVE_DECK)
+                    ?: savedState.remove<Long>(KEY_ACTIVE_DECK)
             }
         }
     }
@@ -310,7 +310,7 @@ class StudyViewModel(
     }
 
     fun clearActiveDeck() {
-        savedState.remove<Int>(KEY_ACTIVE_DECK)
+        savedState.remove<Long>(KEY_ACTIVE_DECK)
         _currentDeck.value = null
         _currentFlashcards.value = emptyList()
         _chatLogs.value = emptyList()
@@ -409,11 +409,11 @@ class StudyViewModel(
 
     fun togglePlayMode(active: Boolean) { _isPlayModeActive.value = active }
 
-    fun getLearningModeForCard(cardId: Int): LearningMode =
+    fun getLearningModeForCard(cardId: Long): LearningMode =
         if (!_isPlayModeActive.value) LearningMode.Flashcard
         else _cardModes.value[cardId] ?: LearningMode.Flashcard
 
-    fun setLearningModeForCard(cardId: Int, mode: LearningMode) {
+    fun setLearningModeForCard(cardId: Long, mode: LearningMode) {
         _cardModes.value = _cardModes.value.toMutableMap().apply { put(cardId, mode) }
     }
 
@@ -512,7 +512,7 @@ class StudyViewModel(
         rawText: String,
         topicHint: String = "",
         fileUri: android.net.Uri? = null,
-        mergeDeckId: Int? = null,
+        mergeDeckId: Long? = null,
         density: String = "Balanced",
     ) = importPipeline.import(rawText, topicHint, fileUri, mergeDeckId, density)
 

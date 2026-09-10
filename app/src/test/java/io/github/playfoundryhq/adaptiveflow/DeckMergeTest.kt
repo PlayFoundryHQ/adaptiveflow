@@ -10,7 +10,7 @@ import org.junit.Test
 class DeckMergeTest {
 
     private fun card(front: String, back: String, notes: String? = null) =
-        Flashcard(id = front.hashCode(), deckId = 1, front = front, back = back, notes = notes)
+        Flashcard(id = front.hashCode().toLong(), deckId = 1L, front = front, back = back, notes = notes)
 
     @Test
     fun `matching ignores case and punctuation`() {

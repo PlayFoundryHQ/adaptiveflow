@@ -65,8 +65,8 @@ class ImportPipeline(
 
     private class PendingMerge(val deck: Deck, val plan: DeckMerge.Plan)
     private class ImportUndo(
-        val insertedCardIds: List<Int>,
-        val restoredNotes: List<Pair<Int, String?>>,
+        val insertedCardIds: List<Long>,
+        val restoredNotes: List<Pair<Long, String?>>,
     )
 
     private val _state = MutableStateFlow<ImportState>(ImportState.Idle)
@@ -84,7 +84,7 @@ class ImportPipeline(
         rawText: String,
         topicHint: String = "",
         fileUri: Uri? = null,
-        mergeDeckId: Int? = null,
+        mergeDeckId: Long? = null,
         density: String = "Balanced",
     ) {
         if (rawText.isBlank() && fileUri == null) return
@@ -248,7 +248,7 @@ class ImportPipeline(
             val insertedIds = p.plan.toInsert.map {
                 repository.insertFlashcard(
                     Flashcard(deckId = p.deck.id, front = it.front, back = it.back, notes = it.notes)
-                ).toInt()
+                )
             }
             val restored = p.plan.toEnrich.map { e ->
                 repository.updateFlashcard(e.card.copy(notes = e.mergedNotes))
@@ -279,7 +279,7 @@ class ImportPipeline(
     }
 
     private suspend fun saveOrMergeCards(
-        targetDeckId: Int?,
+        targetDeckId: Long?,
         deckName: String,
         sourceLanguage: String?,
         targetLanguage: String?,
@@ -300,7 +300,7 @@ class ImportPipeline(
 
         val newDeckId = repository.insertDeck(
             Deck(name = deckName, sourceLanguage = sourceLanguage, targetLanguage = targetLanguage)
-        ).toInt()
+        )
         repository.insertFlashcards(parsedCards.map { Flashcard(deckId = newDeckId, front = it.front, back = it.back, notes = it.notes) })
         lastUndo = null
         return ImportState.Success(deckName)

@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class StudyRepository(private val studyDao: StudyDao) {
-    val allDecksFlow: Flow<List<Deck>> = studyDao.getAllDecksFlow()
+    val allDecksFlow = studyDao.getAllDecksFlow()
     val allDecksWithCardsFlow: Flow<List<DeckWithCards>> = studyDao.getAllDecksWithCardsFlow()
 
     /** One-shot read of all decks (used for the first-run seed guard). */
     suspend fun allDecksFlowSnapshot(): List<Deck> = studyDao.getAllDecksFlow().first()
 
-    suspend fun getDeckById(id: Int): Deck? = studyDao.getDeckById(id)
+    suspend fun getDeckById(id: Long): Deck? = studyDao.getDeckById(id)
 
     suspend fun insertDeck(deck: Deck): Long = studyDao.insertDeck(deck)
 
@@ -25,13 +25,13 @@ class StudyRepository(private val studyDao: StudyDao) {
 
     suspend fun deleteDeck(deck: Deck) = studyDao.deleteDeck(deck)
 
-    fun getFlashcardsForDeckFlow(deckId: Int): Flow<List<Flashcard>> =
+    fun getFlashcardsForDeckFlow(deckId: Long): Flow<List<Flashcard>> =
         studyDao.getFlashcardsForDeckFlow(deckId)
 
-    suspend fun getFlashcardsForDeck(deckId: Int): List<Flashcard> =
+    suspend fun getFlashcardsForDeck(deckId: Long): List<Flashcard> =
         studyDao.getFlashcardsForDeck(deckId)
 
-    suspend fun getFlashcardById(id: Int): Flashcard? = studyDao.getFlashcardById(id)
+    suspend fun getFlashcardById(id: Long): Flashcard? = studyDao.getFlashcardById(id)
 
     suspend fun insertFlashcard(flashcard: Flashcard): Long = studyDao.insertFlashcard(flashcard)
 
@@ -41,15 +41,15 @@ class StudyRepository(private val studyDao: StudyDao) {
 
     suspend fun deleteFlashcard(flashcard: Flashcard) = studyDao.deleteFlashcard(flashcard)
 
-    fun getChatLogsForDeckFlow(deckId: Int): Flow<List<ChatLog>> =
+    fun getChatLogsForDeckFlow(deckId: Long): Flow<List<ChatLog>> =
         studyDao.getChatLogsForDeckFlow(deckId)
 
-    suspend fun getChatLogsForDeck(deckId: Int): List<ChatLog> =
+    suspend fun getChatLogsForDeck(deckId: Long): List<ChatLog> =
         studyDao.getChatLogsForDeck(deckId)
 
     suspend fun insertChatLog(chatLog: ChatLog): Long = studyDao.insertChatLog(chatLog)
 
-    suspend fun clearChatLogsForDeck(deckId: Int) = studyDao.clearChatLogsForDeck(deckId)
+    suspend fun clearChatLogsForDeck(deckId: Long) = studyDao.clearChatLogsForDeck(deckId)
 
     // ---- Progress (gamification) ----
 

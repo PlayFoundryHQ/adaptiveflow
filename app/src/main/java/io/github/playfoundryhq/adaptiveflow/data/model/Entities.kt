@@ -7,7 +7,7 @@ import androidx.room.Index
 
 @Entity(tableName = "decks")
 data class Deck(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val sourceLanguage: String? = null,
     val targetLanguage: String? = null,
@@ -27,8 +27,8 @@ data class Deck(
     indices = [Index(value = ["deckId"])]
 )
 data class Flashcard(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val deckId: Int,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val deckId: Long,
     val front: String,  // Word to learn
     val back: String,   // Definition / translation
     val notes: String? = null,
@@ -51,9 +51,9 @@ data class Flashcard(
     indices = [Index(value = ["deckId"])]
 )
 data class ChatLog(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val deckId: Int,
-    val flashcardId: Int? = null,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val deckId: Long,
+    val flashcardId: Long? = null,
     val sender: String, // "user" or "ai"
     val message: String,
     val timestamp: Long = System.currentTimeMillis()

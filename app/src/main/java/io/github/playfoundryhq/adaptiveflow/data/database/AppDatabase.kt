@@ -21,7 +21,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Progress
  */
 @Database(
     entities = [Deck::class, Flashcard::class, ChatLog::class, Progress::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -46,8 +46,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v2 → v3: entity id / foreign-key columns went `Int` → `Long` in Kotlin.
+         * SQLite stores every `INTEGER` column as a 64-bit value already, so the
+         * on-disk schema is byte-identical and there is nothing to migrate — this
+         * only exists so Room accepts the version bump.
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) { /* no-op: INTEGER is INTEGER */ }
+        }
+
         // Register migrations here as the schema evolves.
-        private val MIGRATIONS = arrayOf<androidx.room.migration.Migration>(MIGRATION_1_2)
+        private val MIGRATIONS = arrayOf<androidx.room.migration.Migration>(MIGRATION_1_2, MIGRATION_2_3)
 
         fun getDatabase(context: Context): AppDatabase =
             INSTANCE ?: synchronized(this) {

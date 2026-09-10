@@ -111,7 +111,7 @@ fun ImportTab(viewModel: StudyViewModel) {
 
     val decks by viewModel.allDecks.collectAsStateWithLifecycle()
     var isMergeEnabled by rememberSaveable { mutableStateOf(false) }
-    var selectedMergeDeckId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var selectedMergeDeckId by rememberSaveable { mutableStateOf<Long?>(null) }
     var isDeckDropdownExpanded by remember { mutableStateOf(false) }
     var selectedDensity by rememberSaveable { mutableStateOf("Balanced") } // "Focused", "Balanced", "Exhaustive"
 
