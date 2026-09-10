@@ -42,4 +42,11 @@ class LanguagesTest {
         val codes = Languages.all.map { it.code }
         assertEquals(codes.size, codes.toSet().size)
     }
+
+    @Test fun `uiLocaleTag returns a tag only for translated languages`() {
+        assertEquals("fa", Languages.uiLocaleTag("Persian"))
+        assertEquals("en", Languages.uiLocaleTag("English"))
+        assertNull(Languages.uiLocaleTag("German"))   // no values-de yet
+        assertNull(Languages.uiLocaleTag("Klingon"))
+    }
 }
