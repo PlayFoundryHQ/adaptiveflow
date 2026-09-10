@@ -91,6 +91,10 @@
         <p>Save a deck to JSON (re-imports for free) or CSV (opens in Anki). Building decks costs API tokens; keep the results.</p>
       </div>
       <div class="card">
+        <h3>English &amp; Persian UI</h3>
+        <p>The interface ships in English and <span dir="rtl">فارسی</span>. Pick Persian as your language and the whole app switches, right-to-left included.</p>
+      </div>
+      <div class="card">
         <h3>Native TTS</h3>
         <p>Prefers Google's neural voices, picks the best voice for the target language, offers to install a missing language pack.</p>
       </div>
@@ -122,10 +126,13 @@
   <section>
     <h2>Under the hood</h2>
     <p class="note">
-      Kotlin + Jetpack Compose, single-Activity. Room for decks / cards / SRS / progress
-      (with real migrations). A provider-agnostic <code>AiProvider</code> layer.
-      Bleeding-edge toolchain by choice. One CI workflow: push to <code>main</code> builds
-      a signed release APK. R8 + resource shrinking. MIT-adjacent open source — see the repo.
+      Kotlin + Jetpack Compose, single-Activity with <code>navigation-compose</code> and a
+      small manual DI container. Room for decks / cards / SRS / progress (real migrations,
+      <code>exportSchema</code>). A provider-agnostic <code>AiProvider</code> layer; the import
+      pipeline and merge planner are pure and unit-tested. Full <code>strings.xml</code> with a
+      Persian catalogue. Bleeding-edge toolchain by choice. One CI workflow: push to
+      <code>main</code> builds a signed release APK. R8 + resource shrinking. Open source —
+      see the repo.
     </p>
   </section>
 
