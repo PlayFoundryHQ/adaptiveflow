@@ -52,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -170,7 +171,7 @@ fun DecksTab(
         ) {
             Icon(
                 imageVector = Icons.Default.VpnKey,
-                contentDescription = "API Key Configuration",
+                contentDescription = stringResource(R.string.decks_api_key_desc),
                 tint = c.textSecondary,
                 modifier = Modifier.size(18.dp)
             )
@@ -199,14 +200,14 @@ fun DecksTab(
                     )
                 }
                 Text(
-                    text = "Your Library is Empty",
+                    text = stringResource(R.string.decks_empty_title),
                     color = c.textPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Your library is currently empty. Import some new study material from YouTube, PDF, or raw text to continue learning!",
+                    text = stringResource(R.string.decks_empty_body),
                     color = c.textSecondary,
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center
@@ -218,7 +219,7 @@ fun DecksTab(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.height(48.dp)
                 ) {
-                    Text("Import / Create Deck", color = c.onAccent, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.decks_empty_cta), color = c.onAccent, fontWeight = FontWeight.Bold)
                 }
             }
         } else {
@@ -233,13 +234,13 @@ fun DecksTab(
                 ) {
                     Column {
                         Text(
-                            text = "Decks",
+                            text = stringResource(R.string.nav_decks),
                             color = c.textPrimary,
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Black
                         )
                         Text(
-                            text = "Universal Study Dashboard",
+                            text = stringResource(R.string.decks_subtitle),
                             color = c.textSecondary,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium
@@ -259,7 +260,7 @@ fun DecksTab(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Flag,
-                                contentDescription = "Active Study Goal Settings",
+                                contentDescription = stringResource(R.string.decks_goal_settings_desc),
                                 tint = c.warning,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -291,7 +292,7 @@ fun DecksTab(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Create New Deck",
+                                contentDescription = stringResource(R.string.decks_create_new_desc),
                                 tint = c.accent,
                                 modifier = Modifier.size(24.dp)
                             )
@@ -329,7 +330,7 @@ fun DecksTab(
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = "ACTIVE STUDY GOAL",
+                                        text = stringResource(R.string.decks_goal_badge),
                                         color = Color.White,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Black,
@@ -337,7 +338,7 @@ fun DecksTab(
                                     )
                                 }
                                 Text(
-                                    text = "• Click to edit",
+                                    text = stringResource(R.string.decks_goal_click_to_edit),
                                     color = c.heroTextMuted.copy(alpha = 0.5f),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Medium
@@ -345,14 +346,14 @@ fun DecksTab(
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "Learn $targetLanguage from $nativeLanguage",
+                                text = stringResource(R.string.decks_goal_headline, targetLanguage, nativeLanguage),
                                 color = c.heroText,
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "New decks, quizzes, and tutor replies are tuned to $targetLanguage. Tap any deck below to study!",
+                                text = stringResource(R.string.decks_goal_body, targetLanguage),
                                 color = c.heroTextMuted,
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
@@ -399,7 +400,7 @@ fun DecksTab(
         ) {
             Icon(
                 imageVector = Icons.Default.CreateNewFolder,
-                contentDescription = "New Deck"
+                contentDescription = stringResource(R.string.decks_fab_desc)
             )
         }
     }
@@ -551,13 +552,13 @@ fun DeckCardItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Mastery Progress",
+                        text = stringResource(R.string.decks_mastery_progress),
                         color = c.textSecondary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "$learnedCards / $totalCards Words (${(learnedProgress * 100).toInt()}%)",
+                        text = stringResource(R.string.decks_mastery_count, learnedCards, totalCards, (learnedProgress * 100).toInt()),
                         color = c.textPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -583,7 +584,7 @@ fun DeckCardItem(
                 // Total cards stat
                 StatChip(
                     icon = Icons.AutoMirrored.Filled.MenuBook,
-                    label = "$totalCards Words",
+                    label = stringResource(R.string.decks_stat_words, totalCards),
                     contentColor = c.textSecondary,
                     backgroundColor = c.surfaceMuted,
                     modifier = Modifier.weight(1f)
@@ -592,7 +593,7 @@ fun DeckCardItem(
                 // Mastered / Learned stat
                 StatChip(
                     icon = Icons.Default.CheckCircle,
-                    label = "$learnedCards Learned",
+                    label = stringResource(R.string.decks_stat_learned, learnedCards),
                     contentColor = c.success,
                     backgroundColor = c.successMuted,
                     modifier = Modifier.weight(1f)
@@ -601,7 +602,7 @@ fun DeckCardItem(
                 // Due cards stat
                 StatChip(
                     icon = Icons.Default.Schedule,
-                    label = if (reviewsDue > 0) "$reviewsDue Due" else "0 Due",
+                    label = stringResource(R.string.decks_stat_due, reviewsDue),
                     contentColor = if (reviewsDue > 0) c.warning else c.textFaint,
                     backgroundColor = if (reviewsDue > 0) c.warningMuted else c.surfaceMuted,
                     modifier = Modifier.weight(1f)

@@ -52,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -112,9 +113,9 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
             runCatching {
                 context.contentResolver.openOutputStream(uri)?.use { it.write(payload.second.toByteArray()) }
             }.onSuccess {
-                AppSnackbar.show("Deck exported")
+                AppSnackbar.show(context.getString(R.string.study_export_ok))
             }.onFailure {
-                AppSnackbar.show("Export failed: ${it.message}")
+                AppSnackbar.show(context.getString(R.string.study_export_failed, it.message ?: ""))
             }
         }
     }
@@ -124,7 +125,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
         scope.launch {
             val content = viewModel.buildDeckExport(format)
             if (content == null) {
-                AppSnackbar.show("Nothing to export — this deck has no cards yet.")
+                AppSnackbar.show(context.getString(R.string.study_export_empty))
                 return@launch
             }
             pendingExport = format to content
@@ -157,14 +158,14 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
             },
             title = {
                 Text(
-                    text = "Delete \"${deck?.name ?: "this deck"}\"?",
+                    text = stringResource(R.string.study_delete_title, deck?.name ?: stringResource(R.string.study_this_deck)),
                     fontWeight = FontWeight.Bold,
                     color = c.textPrimary
                 )
             },
             text = {
                 Text(
-                    text = "This permanently deletes every card and all study progress in this deck. This cannot be undone.",
+                    text = stringResource(R.string.study_delete_body),
                     color = c.textSecondary
                 )
             },
@@ -173,12 +174,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     showDeleteConfirmation = false
                     viewModel.deleteCurrentDeck()
                 }) {
-                    Text("Delete", color = c.danger, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.study_delete_confirm), color = c.danger, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text("Cancel", color = c.textSecondary)
+                    Text(stringResource(R.string.action_cancel), color = c.textSecondary)
                 }
             }
         )
@@ -190,25 +191,25 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
             shape = RoundedCornerShape(24.dp),
             containerColor = c.surface,
             icon = { Icon(Icons.Default.FileDownload, contentDescription = null, tint = c.accent) },
-            title = { Text("Export \"${deck?.name ?: "deck"}\"", fontWeight = FontWeight.Bold, color = c.textPrimary) },
+            title = { Text(stringResource(R.string.study_export_title, deck?.name ?: stringResource(R.string.study_deck_fallback)), fontWeight = FontWeight.Bold, color = c.textPrimary) },
             text = {
                 Text(
-                    "Save this deck to a file. JSON re-imports into the Paste tab with no AI call; CSV opens in Anki and spreadsheets.",
+                    stringResource(R.string.study_export_body),
                     color = c.textSecondary
                 )
             },
             confirmButton = {
                 TextButton(onClick = { startExport(StudyViewModel.ExportFormat.JSON) }) {
-                    Text("JSON", color = c.accent, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.study_fmt_json), color = c.accent, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 Row {
                     TextButton(onClick = { startExport(StudyViewModel.ExportFormat.CSV) }) {
-                        Text("CSV", color = c.accent, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.study_fmt_csv), color = c.accent, fontWeight = FontWeight.Bold)
                     }
                     TextButton(onClick = { showExportSheet = false }) {
-                        Text("Cancel", color = c.textSecondary)
+                        Text(stringResource(R.string.action_cancel), color = c.textSecondary)
                     }
                 }
             }
@@ -249,7 +250,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Session Complete!",
+                        text = stringResource(R.string.study_session_complete),
                         fontWeight = FontWeight.Black,
                         fontSize = 20.sp,
                         color = c.textPrimary,
@@ -265,7 +266,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Outstanding work! You have flipped every card in the **${deck?.name}** deck to help visualize and lock in your vocabulary learning.",
+                        text = stringResource(R.string.study_session_complete_body, deck?.name ?: ""),
                         color = c.textSecondary,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center
@@ -285,7 +286,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 color = c.accent
                             )
                             Text(
-                                text = "Total Cards",
+                                text = stringResource(R.string.study_total_cards),
                                 fontSize = 11.sp,
                                 color = c.textSecondary
                             )
@@ -298,7 +299,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 color = c.success
                             )
                             Text(
-                                text = "Correct",
+                                text = stringResource(R.string.study_correct),
                                 fontSize = 11.sp,
                                 color = c.textSecondary
                             )
@@ -311,7 +312,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 color = c.danger
                             )
                             Text(
-                                text = "Incorrect",
+                                text = stringResource(R.string.study_incorrect),
                                 fontSize = 11.sp,
                                 color = c.textSecondary
                             )
@@ -336,12 +337,12 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Restart",
+                            contentDescription = stringResource(R.string.study_restart_desc),
                             tint = Color.White,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("RESTART SESSION", fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(stringResource(R.string.study_restart_session), fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             },
@@ -356,7 +357,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         .fillMaxWidth()
                         .testTag("exit_session_button")
                 ) {
-                    Text("EXIT TO LIBRARY", fontWeight = FontWeight.Bold, color = c.textSecondary)
+                    Text(stringResource(R.string.study_exit_library), fontWeight = FontWeight.Bold, color = c.textSecondary)
                 }
             }
         )
@@ -386,7 +387,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.study_back_desc),
                             tint = c.textPrimary
                         )
                     }
@@ -408,7 +409,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.FileDownload,
-                            contentDescription = "Export Deck",
+                            contentDescription = stringResource(R.string.study_export_deck_desc),
                             tint = c.textSecondary
                         )
                     }
@@ -420,19 +421,19 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = "Delete Deck",
+                                contentDescription = stringResource(R.string.study_delete_deck_desc),
                                 tint = c.danger
                             )
                         }
                     } else {
                         IconButton(
                             onClick = {
-                                AppSnackbar.show("This is your protected Master Vocabulary Pool and can't be deleted.")
+                                AppSnackbar.show(context.getString(R.string.study_pool_protected))
                             }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
-                                contentDescription = "This deck is protected and can't be deleted",
+                                contentDescription = stringResource(R.string.study_pool_protected_desc),
                                 tint = c.textFaint
                             )
                         }
@@ -465,7 +466,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "Dynamic Study Session",
+                        text = stringResource(R.string.study_prep_title),
                         color = c.textPrimary,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
@@ -474,7 +475,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Adaptive Flow blends native pronunciations, smart flashcards, and multiple-choice quiz questions based on your real-time performance.",
+                        text = stringResource(R.string.study_prep_body),
                         color = c.textSecondary,
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
@@ -502,13 +503,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
                                 imageVector = Icons.Default.PlayArrow,
-                                contentDescription = "Play",
+                                contentDescription = stringResource(R.string.study_play_desc),
                                 tint = c.onAccent,
                                 modifier = Modifier.size(48.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "PLAY",
+                                text = stringResource(R.string.study_play),
                                 color = c.onAccent,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 12.sp,
@@ -538,7 +539,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.study_back_desc),
                             tint = c.textPrimary
                         )
                     }
@@ -560,7 +561,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Tune,
-                            contentDescription = "Session Options",
+                            contentDescription = stringResource(R.string.study_session_options_desc),
                             tint = c.accent
                         )
                     }
@@ -572,19 +573,19 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = "Delete Deck",
+                                contentDescription = stringResource(R.string.study_delete_deck_desc),
                                 tint = c.danger
                             )
                         }
                     } else {
                         IconButton(
                             onClick = {
-                                AppSnackbar.show("This is your protected Master Vocabulary Pool and can't be deleted.")
+                                AppSnackbar.show(context.getString(R.string.study_pool_protected))
                             }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
-                                contentDescription = "This deck is protected and can't be deleted",
+                                contentDescription = stringResource(R.string.study_pool_protected_desc),
                                 tint = c.textFaint
                             )
                         }
@@ -596,7 +597,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator(color = c.accent)
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text("Loading Cards...", color = c.textPrimary)
+                            Text(stringResource(R.string.study_loading_cards), color = c.textPrimary)
                         }
                     }
                 } else {
@@ -619,14 +620,14 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 Text("🔄", fontSize = 14.sp)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Flip Session Progress",
+                                    text = stringResource(R.string.study_flip_progress),
                                     color = c.textPrimary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Text(
-                                text = "$flippedCount of ${cards.size} flipped",
+                                text = stringResource(R.string.study_flipped_count, flippedCount, cards.size),
                                 color = c.success,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black
@@ -656,7 +657,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "✓ $correctTotal   ✗ $incorrectTotal",
+                                text = stringResource(R.string.study_score, correctTotal, incorrectTotal),
                                 color = c.textSecondary,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
@@ -668,7 +669,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "AI Adaptive Status:",
+                                    text = stringResource(R.string.study_ai_status),
                                     color = c.textSecondary,
                                     fontSize = 10.sp
                                 )
@@ -682,7 +683,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                         )
                                 )
                                 Text(
-                                    text = if (consecutiveStruggles >= 2) "Supportive" else "Standard",
+                                    text = if (consecutiveStruggles >= 2) stringResource(R.string.study_supportive) else stringResource(R.string.study_standard),
                                     color = if (consecutiveStruggles >= 2) c.warning else c.success,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
@@ -733,7 +734,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                     ) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                            contentDescription = "Read Aloud",
+                                            contentDescription = stringResource(R.string.study_read_aloud_desc),
                                             tint = c.textPrimary,
                                             modifier = Modifier.size(28.dp)
                                         )
@@ -749,7 +750,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                         )
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
-                                            text = "CHOOSE THE CORRECT MEANING",
+                                            text = stringResource(R.string.study_choose_meaning),
                                             color = c.accent,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
@@ -829,13 +830,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                                 if (isCorrect) {
                                                     Icon(
                                                         imageVector = Icons.Default.CheckCircle,
-                                                        contentDescription = "Correct",
+                                                        contentDescription = stringResource(R.string.study_correct),
                                                         tint = c.success
                                                     )
                                                 } else if (isSelected) {
                                                     Icon(
                                                         imageVector = Icons.Default.Cancel,
-                                                        contentDescription = "Incorrect",
+                                                        contentDescription = stringResource(R.string.study_incorrect),
                                                         tint = c.danger
                                                     )
                                                 }
@@ -863,7 +864,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                     ),
                                     shape = RoundedCornerShape(14.dp)
                                 ) {
-                                    Text("CONTINUE", fontWeight = FontWeight.Bold, color = c.onAccent)
+                                    Text(stringResource(R.string.study_continue), fontWeight = FontWeight.Bold, color = c.onAccent)
                                 }
                             } else {
                                 Spacer(modifier = Modifier.height(52.dp))
@@ -898,7 +899,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         ) {
                             if (isFlipped) {
                                 Text(
-                                    text = "Choose your recall confidence level on the card to update the study schedule.",
+                                    text = stringResource(R.string.study_confidence_hint),
                                     color = c.textSecondary,
                                     fontSize = 12.sp,
                                     textAlign = TextAlign.Center,
@@ -916,7 +917,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "REVEAL TARGET WORD",
+                                        text = stringResource(R.string.study_reveal_target),
                                         color = c.onAccent,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp,
@@ -959,20 +960,20 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Psychology,
-                                        contentDescription = "AI Help",
+                                        contentDescription = stringResource(R.string.study_ai_help_desc),
                                         tint = c.success,
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
                                 Column {
                                     Text(
-                                        text = "HELP / ASK AI TUTOR",
+                                        text = stringResource(R.string.study_help_ask_tutor),
                                         color = c.textPrimary,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Black
                                     )
                                     Text(
-                                        text = "Ask pronunciation, origin or usage hints",
+                                        text = stringResource(R.string.study_tutor_sub),
                                         color = c.textSecondary,
                                         fontSize = 10.sp
                                     )
@@ -980,7 +981,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                             }
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Chat,
-                                contentDescription = "Open Chat",
+                                contentDescription = stringResource(R.string.study_open_chat_desc),
                                 tint = c.accent,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -1022,7 +1023,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Session Controls",
+                        text = stringResource(R.string.study_session_controls),
                         color = c.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black
@@ -1030,7 +1031,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     IconButton(onClick = { showContextDrawer = false }) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.action_close),
                             tint = c.textPrimary
                         )
                     }
@@ -1047,13 +1048,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                 ) {
                     Column {
                         Text(
-                            text = "Fluid Play Mode",
+                            text = stringResource(R.string.study_play_mode),
                             color = c.textPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                         Text(
-                            text = "Auto-mix flashcards and smart quiz questions",
+                            text = stringResource(R.string.study_play_mode_sub),
                             color = c.textSecondary,
                             fontSize = 11.sp
                         )
@@ -1090,7 +1091,7 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                     ) {
                         Icon(Icons.Default.RecordVoiceOver, contentDescription = null, tint = c.warning, modifier = Modifier.size(18.dp))
                         Text(
-                            "No offline voice for ${locale.displayLanguage}. Tap to install it.",
+                            stringResource(R.string.study_no_voice, locale.displayLanguage),
                             color = c.warning, fontSize = 12.sp, fontWeight = FontWeight.Medium
                         )
                     }
@@ -1104,13 +1105,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                 ) {
                     Column {
                         Text(
-                            text = "Auto-Play Pronunciation",
+                            text = stringResource(R.string.study_autoplay),
                             color = c.textPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                         Text(
-                            text = "Speak terms automatically when loaded",
+                            text = stringResource(R.string.study_autoplay_sub),
                             color = c.textSecondary,
                             fontSize = 11.sp
                         )
@@ -1133,13 +1134,13 @@ fun StudySessionScreen(viewModel: StudyViewModel) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Pronunciation Speed",
+                            text = stringResource(R.string.study_speed),
                             color = c.textPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                         Text(
-                            text = "${speechRate}x",
+                            text = stringResource(R.string.study_speed_value, speechRate.toString()),
                             color = c.accent,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
@@ -1286,7 +1287,7 @@ fun InteractiveFlashcard(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                            contentDescription = "Read Aloud",
+                            contentDescription = stringResource(R.string.study_read_aloud_desc),
                             tint = c.accent,
                             modifier = Modifier.size(28.dp)
                         )
@@ -1307,7 +1308,7 @@ fun InteractiveFlashcard(
                         ) {
                             Icon(
                                 imageVector = getIconForCard(card),
-                                contentDescription = "Concept Icon",
+                                contentDescription = stringResource(R.string.quest_concept_icon_desc),
                                 tint = c.accent,
                                 modifier = Modifier.size(36.dp)
                             )
@@ -1329,7 +1330,7 @@ fun InteractiveFlashcard(
                                 .padding(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "SOURCE TERM",
+                                text = stringResource(R.string.study_source_term),
                                 color = c.onAccent,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -1349,12 +1350,12 @@ fun InteractiveFlashcard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.VisibilityOff,
-                                contentDescription = "Hidden Target Word",
+                                contentDescription = stringResource(R.string.study_hidden_target_desc),
                                 tint = c.accent.copy(alpha = 0.7f),
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = "Target word hidden (Tap card)",
+                                text = stringResource(R.string.study_target_hidden),
                                 color = c.accent.copy(alpha = 0.8f),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
@@ -1377,7 +1378,7 @@ fun InteractiveFlashcard(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                            contentDescription = "Read Aloud",
+                            contentDescription = stringResource(R.string.study_read_aloud_desc),
                             tint = c.accent,
                             modifier = Modifier.size(28.dp)
                         )
@@ -1390,7 +1391,7 @@ fun InteractiveFlashcard(
                         // Small icon indicator at the top of back face
                         Icon(
                             imageVector = getIconForCard(card),
-                            contentDescription = "Concept Icon Back",
+                            contentDescription = stringResource(R.string.quest_concept_icon_back_desc),
                             tint = c.accent.copy(alpha = 0.6f),
                             modifier = Modifier.size(32.dp)
                         )
@@ -1424,7 +1425,7 @@ fun InteractiveFlashcard(
                                 .padding(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "TARGET TRANSLATION",
+                                text = stringResource(R.string.study_target_translation),
                                 color = c.accent,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -1435,7 +1436,7 @@ fun InteractiveFlashcard(
                         // Integrated User Confidence Rating Segment
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
-                            text = "RATE YOUR RECALL CONFIDENCE:",
+                            text = stringResource(R.string.study_rate_confidence),
                             color = c.textSecondary,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -1463,13 +1464,13 @@ fun InteractiveFlashcard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.SentimentVeryDissatisfied,
-                                    contentDescription = "Low Confidence",
+                                    contentDescription = stringResource(R.string.study_low_conf_desc),
                                     tint = c.danger,
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "LOW",
+                                    text = stringResource(R.string.study_low),
                                     color = c.danger,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -1490,13 +1491,13 @@ fun InteractiveFlashcard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.SentimentNeutral,
-                                    contentDescription = "Medium Confidence",
+                                    contentDescription = stringResource(R.string.study_med_conf_desc),
                                     tint = c.warning,
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "MEDIUM",
+                                    text = stringResource(R.string.study_medium),
                                     color = c.warning,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -1517,13 +1518,13 @@ fun InteractiveFlashcard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.SentimentVerySatisfied,
-                                    contentDescription = "High Confidence",
+                                    contentDescription = stringResource(R.string.study_high_conf_desc),
                                     tint = c.success,
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "HIGH",
+                                    text = stringResource(R.string.study_high),
                                     color = c.success,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold

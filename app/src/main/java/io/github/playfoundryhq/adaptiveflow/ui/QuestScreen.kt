@@ -52,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -139,13 +140,13 @@ fun PathTab(
                             Text("🔥", fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = if (streakDays > 0) "$streakDays Days" else "0 Days",
+                                text = stringResource(R.string.quest_streak_days, streakDays),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 16.sp,
                                 color = c.textPrimary
                             )
                         }
-                        Text("Streak", fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.quest_streak_label), fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
                     }
 
                     // Vertical Divider
@@ -157,13 +158,13 @@ fun PathTab(
                             Text("⚡", fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "$totalXp XP",
+                                text = stringResource(R.string.quest_xp_value, totalXp),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 16.sp,
                                 color = c.textPrimary
                             )
                         }
-                        Text("Total Points", fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.quest_xp_label), fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
                     }
 
                     // Vertical Divider
@@ -175,13 +176,13 @@ fun PathTab(
                             Text("👑", fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = if (crownsCount > 0) "$crownsCount" else "0",
+                                text = crownsCount.toString(),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 16.sp,
                                 color = c.textPrimary
                             )
                         }
-                        Text("Crowns Earned", fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.quest_crowns_label), fontSize = 11.sp, color = c.textSecondary, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -219,7 +220,7 @@ fun PathTab(
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = "UNIFIED QUEST GOAL",
+                                        text = stringResource(R.string.quest_goal_badge),
                                         color = Color.White,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Black,
@@ -229,14 +230,14 @@ fun PathTab(
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Learn $targetLanguage from $nativeLanguage",
+                                text = stringResource(R.string.decks_goal_headline, targetLanguage, nativeLanguage),
                                 color = c.heroText,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Manage your global languages directly below. Your adaptive flashcards and tutors will instantly tune to this goal.",
+                                text = stringResource(R.string.quest_goal_body),
                                 color = c.heroTextMuted,
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
@@ -263,7 +264,7 @@ fun PathTab(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Goal Configuration",
+                                text = stringResource(R.string.quest_goal_config),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = c.textPrimary
@@ -272,7 +273,7 @@ fun PathTab(
                             // Native Language Selector
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(
-                                    text = "Your Native Language:",
+                                    text = stringResource(R.string.quest_native_label),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = c.textSecondary
@@ -310,7 +311,7 @@ fun PathTab(
                             // Target Language Selector
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(
-                                    text = "Language to Learn (Target):",
+                                    text = stringResource(R.string.quest_target_label),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = c.textSecondary
@@ -371,7 +372,7 @@ fun PathTab(
                                 .padding(16.dp)
                         ) {
                             Text(
-                                text = "$targetLanguage Goal Progress",
+                                text = stringResource(R.string.quest_goal_progress_title, targetLanguage),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = c.textPrimary
@@ -396,20 +397,20 @@ fun PathTab(
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Column {
                                         Text(
-                                            text = "$learnedCards of $totalCards mastered",
+                                            text = stringResource(R.string.quest_mastered_count, learnedCards, totalCards),
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp,
                                             color = c.textPrimary
                                         )
                                         Text(
-                                            text = "${matchingDecks.size} active target decks",
+                                            text = stringResource(R.string.quest_active_decks, matchingDecks.size),
                                             fontSize = 11.sp,
                                             color = c.textSecondary
                                         )
                                     }
                                 }
                                 Text(
-                                    text = "$masteryPercent%",
+                                    text = stringResource(R.string.quest_percent, masteryPercent),
                                     fontWeight = FontWeight.Black,
                                     fontSize = 20.sp,
                                     color = c.warning
@@ -451,7 +452,7 @@ fun PathTab(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "Weekly Quests & Challenges",
+                                text = stringResource(R.string.quest_weekly_title),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = c.textPrimary
@@ -462,7 +463,7 @@ fun PathTab(
                                 Text(if (streakDays > 0) "✅" else "⏳", fontSize = 16.sp)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Maintain active daily study streak (🔥 $streakDays Days)",
+                                    text = stringResource(R.string.quest_q1, streakDays),
                                     fontSize = 12.sp,
                                     color = c.textSecondary
                                 )
@@ -474,7 +475,7 @@ fun PathTab(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     Text(
-                                        text = "Reach 500 total study XP (Points: $totalXp / 500)",
+                                        text = stringResource(R.string.quest_q2, totalXp),
                                         fontSize = 12.sp,
                                         color = c.textSecondary
                                     )
@@ -497,7 +498,7 @@ fun PathTab(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     Text(
-                                        text = "Unlock 3 mastered deck crowns (Crowns: $crownsCount / 3)",
+                                        text = stringResource(R.string.quest_q3, crownsCount),
                                         fontSize = 12.sp,
                                         color = c.textSecondary
                                     )
@@ -520,7 +521,7 @@ fun PathTab(
                 // Matching Decks header
                 item {
                     Text(
-                        text = "Active Quest Decks for $targetLanguage",
+                        text = stringResource(R.string.quest_active_quest_decks, targetLanguage),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = c.textPrimary,
@@ -548,14 +549,14 @@ fun PathTab(
                                 Text("📭", fontSize = 32.sp)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "No Decks Match Your Goal",
+                                    text = stringResource(R.string.quest_no_match_title),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
                                     color = c.textSecondary
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "We couldn't find any study materials configured for $targetLanguage in your library yet.",
+                                    text = stringResource(R.string.quest_no_match_body, targetLanguage),
                                     fontSize = 12.sp,
                                     color = c.textSecondary,
                                     textAlign = TextAlign.Center,
@@ -574,7 +575,7 @@ fun PathTab(
                                     colors = ButtonDefaults.buttonColors(containerColor = c.accent),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Text("AI Quest Generator: Seed Starter Deck", color = c.onAccent, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.quest_seed_button), color = c.onAccent, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -628,7 +629,7 @@ fun PathTab(
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "$learned of $total words learned",
+                                            text = stringResource(R.string.quest_words_learned, learned, total),
                                             fontSize = 11.sp,
                                             color = c.textSecondary
                                         )
@@ -650,7 +651,7 @@ fun PathTab(
 
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = "Details",
+                                        contentDescription = stringResource(R.string.quest_details_desc),
                                         tint = c.textFaint,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -707,7 +708,7 @@ fun PathTab(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "${deck.sourceLanguage ?: "Source"} ➔ ${deck.targetLanguage ?: "Target"}",
+                            text = stringResource(R.string.quest_lang_pair, deck.sourceLanguage ?: stringResource(R.string.quest_source), deck.targetLanguage ?: stringResource(R.string.quest_target)),
                             fontSize = 12.sp,
                             color = style.textColor,
                             fontWeight = FontWeight.Bold
@@ -739,7 +740,7 @@ fun PathTab(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Overview Stats",
+                                    text = stringResource(R.string.quest_tab_stats),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (activeViewTab == "stats") c.textPrimary else c.textSecondary
@@ -755,7 +756,7 @@ fun PathTab(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Vocabulary Grid",
+                                    text = stringResource(R.string.quest_tab_grid),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (activeViewTab == "grid") c.textPrimary else c.textSecondary
@@ -771,32 +772,32 @@ fun PathTab(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                                     Text(text = "$total", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
-                                    Text(text = "Total Words", fontSize = 11.sp, color = c.textSecondary)
+                                    Text(text = stringResource(R.string.quest_total_words), fontSize = 11.sp, color = c.textSecondary)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                                     Text(text = "$learned", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = c.success)
-                                    Text(text = "Learned", fontSize = 11.sp, color = c.textSecondary)
+                                    Text(text = stringResource(R.string.quest_learned), fontSize = 11.sp, color = c.textSecondary)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                                     Text(text = "$reviewsDue", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = if (reviewsDue > 0) c.warning else c.textFaint)
-                                    Text(text = "Due Now", fontSize = 11.sp, color = c.textSecondary)
+                                    Text(text = stringResource(R.string.quest_due_now), fontSize = 11.sp, color = c.textSecondary)
                                 }
                             }
 
                             // Leitner Memory Stages visualization
                             Text(
-                                text = "Leitner Memory Boxes",
+                                text = stringResource(R.string.quest_leitner_title),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = c.textPrimary
                             )
 
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                LeitnerBoxProgressRow(boxName = "Box 1: New / Unstudied", count = box1Count, total = total, color = c.textFaint)
-                                LeitnerBoxProgressRow(boxName = "Box 2: Fresh Review", count = box2Count, total = total, color = Color(0xFF60A5FA))
-                                LeitnerBoxProgressRow(boxName = "Box 3: Familiar", count = box3Count, total = total, color = Color(0xFF818CF8))
-                                LeitnerBoxProgressRow(boxName = "Box 4: Highly Retained", count = box4Count, total = total, color = c.warning)
-                                LeitnerBoxProgressRow(boxName = "Box 5: Mastered (Permanent)", count = box5Count, total = total, color = c.success)
+                                LeitnerBoxProgressRow(boxName = stringResource(R.string.quest_box1), count = box1Count, total = total, color = c.textFaint)
+                                LeitnerBoxProgressRow(boxName = stringResource(R.string.quest_box2), count = box2Count, total = total, color = Color(0xFF60A5FA))
+                                LeitnerBoxProgressRow(boxName = stringResource(R.string.quest_box3), count = box3Count, total = total, color = Color(0xFF818CF8))
+                                LeitnerBoxProgressRow(boxName = stringResource(R.string.quest_box4), count = box4Count, total = total, color = c.warning)
+                                LeitnerBoxProgressRow(boxName = stringResource(R.string.quest_box5), count = box5Count, total = total, color = c.success)
                             }
                         } else {
                             // Responsive vocabulary cards grid with icons & live interactive 3D click flip
@@ -823,7 +824,7 @@ fun PathTab(
                             .testTag("start_quest_study_button")
                     ) {
                         Text(
-                            text = if (reviewsDue > 0) "Study & Review ($reviewsDue Due)" else "Study Deck / Start Quiz",
+                            text = if (reviewsDue > 0) stringResource(R.string.quest_study_review, reviewsDue) else stringResource(R.string.quest_study_start),
                             color = c.onAccent,
                             fontWeight = FontWeight.Bold
                         )
@@ -834,7 +835,7 @@ fun PathTab(
                         onClick = { selectedNodeDeck = null },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Close Map details", color = c.textSecondary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.quest_close_details), color = c.textSecondary, fontWeight = FontWeight.Bold)
                     }
                 }
             )
@@ -859,7 +860,7 @@ fun LeitnerBoxProgressRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(boxName, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = c.textSecondary)
-            Text("$count words", fontSize = 10.sp, fontWeight = FontWeight.Black, color = c.textPrimary)
+            Text(stringResource(R.string.quest_box_words, count), fontSize = 10.sp, fontWeight = FontWeight.Black, color = c.textPrimary)
         }
         Spacer(modifier = Modifier.height(3.dp))
         LinearProgressIndicator(
@@ -944,7 +945,7 @@ fun ResponsiveVocabularyGrid(
                             ) {
                                 Icon(
                                     imageVector = getIconForCard(card),
-                                    contentDescription = "Concept Icon",
+                                    contentDescription = stringResource(R.string.quest_concept_icon_desc),
                                     tint = c.accent,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -969,7 +970,7 @@ fun ResponsiveVocabularyGrid(
                         ) {
                             Icon(
                                 imageVector = getIconForCard(card),
-                                contentDescription = "Concept Icon Back",
+                                contentDescription = stringResource(R.string.quest_concept_icon_back_desc),
                                 tint = c.success.copy(alpha = 0.6f),
                                 modifier = Modifier.size(16.dp)
                             )
@@ -985,7 +986,7 @@ fun ResponsiveVocabularyGrid(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "TAP TO FLIP",
+                                text = stringResource(R.string.quest_tap_to_flip),
                                 color = c.textFaint,
                                 fontSize = 8.sp,
                                 fontWeight = FontWeight.Bold

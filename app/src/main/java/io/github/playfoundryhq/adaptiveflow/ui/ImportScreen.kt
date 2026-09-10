@@ -53,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -122,15 +123,15 @@ fun ImportTab(viewModel: StudyViewModel) {
             shape = RoundedCornerShape(24.dp),
             containerColor = c.surface,
             icon = { Icon(Icons.Default.Layers, contentDescription = null, tint = c.accent) },
-            title = { Text("Merge into \"${p.targetDeckName}\"?", fontWeight = FontWeight.Bold, color = c.textPrimary) },
+            title = { Text(stringResource(R.string.import_merge_into, p.targetDeckName), fontWeight = FontWeight.Bold, color = c.textPrimary) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    MergeStatRow("${p.newCount}", "new cards added", c.success, c)
-                    MergeStatRow("${p.enrichCount}", "existing cards enriched with new context", c.accent, c)
-                    MergeStatRow("${p.skipCount}", "already present — skipped", c.textFaint, c)
+                    MergeStatRow(p.newCount.toString(), stringResource(R.string.import_merge_new), c.success, c)
+                    MergeStatRow(p.enrichCount.toString(), stringResource(R.string.import_merge_enrich), c.accent, c)
+                    MergeStatRow(p.skipCount.toString(), stringResource(R.string.import_merge_skip), c.textFaint, c)
                     if (p.newCount == 0 && p.enrichCount == 0) {
                         Text(
-                            "Nothing new to add — every parsed term is already in this pool.",
+                            stringResource(R.string.import_merge_nothing),
                             color = c.textSecondary, fontSize = 12.sp
                         )
                     }
@@ -140,11 +141,11 @@ fun ImportTab(viewModel: StudyViewModel) {
                 TextButton(
                     onClick = { viewModel.confirmMerge() },
                     enabled = p.newCount > 0 || p.enrichCount > 0
-                ) { Text("Merge", color = c.accent, fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.import_merge_confirm), color = c.accent, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.cancelMerge() }) {
-                    Text("Cancel", color = c.textSecondary)
+                    Text(stringResource(R.string.action_cancel), color = c.textSecondary)
                 }
             }
         )
@@ -196,7 +197,7 @@ fun ImportTab(viewModel: StudyViewModel) {
             try {
                 val contentResolver = context.contentResolver
                 val mimeType = contentResolver.getType(uri) ?: ""
-                var name = "Selected File"
+                var name = context.getString(R.string.import_selected_file)
                 var size = 0L
 
                 val cursor = contentResolver.query(uri, null, null, null, null)
@@ -208,7 +209,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             size = it.getLong(sizeIndex)
                         }
                         if (nameIndex != -1) {
-                            name = it.getString(nameIndex) ?: "Selected File"
+                            name = it.getString(nameIndex) ?: context.getString(R.string.import_selected_file)
                         }
                     }
                 }
@@ -233,7 +234,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             attachedFileUri = Uri.fromFile(tempFile)
                             DiagnosticLogger.i("MainActivity", "Successfully cached picked file to local sandbox: ${tempFile.absolutePath} (${tempFile.length()} bytes)")
                             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                                AppSnackbar.show("Attached file $name successfully!")
+                                AppSnackbar.show(context.getString(R.string.import_attached_ok, name))
                             }
                         } else {
                             throw Exception("Cached file is empty or missing")
@@ -241,13 +242,13 @@ fun ImportTab(viewModel: StudyViewModel) {
                     } catch (e: Exception) {
                         DiagnosticLogger.e("MainActivity", "Failed to cache selected file", e)
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                            AppSnackbar.show("Failed to cache file: ${e.message}")
+                            AppSnackbar.show(context.getString(R.string.import_cache_failed, e.message ?: ""))
                         }
                     }
                 }
             } catch (e: Exception) {
                 DiagnosticLogger.e("MainActivity", "Error querying file info", e)
-                AppSnackbar.show("Error querying file info: ${e.message}")
+                AppSnackbar.show(context.getString(R.string.import_query_failed, e.message ?: ""))
             }
         }
     }
@@ -271,14 +272,14 @@ fun ImportTab(viewModel: StudyViewModel) {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "One-Tap Import",
+                        text = stringResource(R.string.import_title),
                         color = c.textPrimary,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Black
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Seamlessly build decks using raw texts, YouTube links, or PDF files.",
+                        text = stringResource(R.string.import_subtitle),
                         color = c.textSecondary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
@@ -298,7 +299,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.BugReport,
-                            contentDescription = "Diagnostic Logs",
+                            contentDescription = stringResource(R.string.import_diagnostics_desc),
                             tint = c.danger,
                             modifier = Modifier.size(18.dp)
                         )
@@ -313,7 +314,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.VpnKey,
-                            contentDescription = "API Key Configuration",
+                            contentDescription = stringResource(R.string.decks_api_key_desc),
                             tint = c.textSecondary,
                             modifier = Modifier.size(18.dp)
                         )
@@ -333,9 +334,9 @@ fun ImportTab(viewModel: StudyViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 val modes = listOf(
-                    "Text" to "📝 Paste",
-                    "YouTube" to "📺 YouTube",
-                    "PDF" to "📄 PDF / Files"
+                    "Text" to stringResource(R.string.import_mode_text),
+                    "YouTube" to stringResource(R.string.import_mode_youtube),
+                    "PDF" to stringResource(R.string.import_mode_pdf)
                 )
                 modes.forEach { (modeKey, label) ->
                     val isSelected = selectedImportMode == modeKey
@@ -403,9 +404,9 @@ fun ImportTab(viewModel: StudyViewModel) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = when (selectedImportMode) {
-                                "YouTube" -> "How YouTube URL Import Works"
-                                "PDF" -> "PDF & File Processing"
-                                else -> "Structured Text Parsing"
+                                "YouTube" -> stringResource(R.string.import_guide_title_youtube)
+                                "PDF" -> stringResource(R.string.import_guide_title_pdf)
+                                else -> stringResource(R.string.import_guide_title_text)
                             },
                             color = c.textPrimary,
                             fontSize = 13.sp,
@@ -414,9 +415,9 @@ fun ImportTab(viewModel: StudyViewModel) {
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = when (selectedImportMode) {
-                                "YouTube" -> "Paste a video link plus a Focus/Topic hint describing what it covers. AdaptiveFlow can't read the video itself, so the AI builds a deck from the topic you provide. Needs an API key."
-                                "PDF" -> "To study books or PDFs, copy-paste their text chapters or public links. You can also pick a local plain text file directly!"
-                                else -> "Paste CSV pairs (Front, Back), vocabulary bullet lists, or raw sentences. With an API key the AI extracts translation pairs and adds pronunciation and usage notes where it can; without one, plain \"word: meaning\" lines still import offline."
+                                "YouTube" -> stringResource(R.string.import_guide_desc_youtube)
+                                "PDF" -> stringResource(R.string.import_guide_desc_pdf)
+                                else -> stringResource(R.string.import_guide_desc_text)
                             },
                             color = c.textSecondary,
                             fontSize = 11.sp,
@@ -465,21 +466,21 @@ fun ImportTab(viewModel: StudyViewModel) {
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "💡 Study Large PDFs, Books or Long Videos?",
+                                text = stringResource(R.string.import_helper_title),
                                 color = if (isExternalHelperExpanded) Color(0xFF7E22CE) else c.textPrimary,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = if (isExternalHelperExpanded) "Tap to collapse external guide" else "Tap for a copyable expert prompt to let ChatGPT/Claude/Gemini do the heavy lifting!",
+                                text = if (isExternalHelperExpanded) stringResource(R.string.import_helper_sub_expanded) else stringResource(R.string.import_helper_sub_collapsed),
                                 color = c.textSecondary,
                                 fontSize = 11.sp
                             )
                         }
                         Icon(
                             imageVector = if (isExternalHelperExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = "Expand or collapse",
+                            contentDescription = stringResource(R.string.import_expand_collapse_desc),
                             tint = c.textSecondary,
                             modifier = Modifier.size(20.dp)
                         )
@@ -491,7 +492,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "Why inline parsers generate fewer cards for large files:",
+                            text = stringResource(R.string.import_helper_why),
                             color = c.textPrimary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -507,7 +508,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             ) {
                                 Text("•", color = Color(0xFF9333EA), fontWeight = FontWeight.Bold)
                                 Text(
-                                    "Rate Limits & Token Caps: Multi-page text split into many sequential API requests often triggers protection limits or hits context limits on mobile connections.",
+                                    stringResource(R.string.import_helper_bullet1),
                                     color = c.textSecondary,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
@@ -520,7 +521,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             ) {
                                 Text("•", color = Color(0xFF9333EA), fontWeight = FontWeight.Bold)
                                 Text(
-                                    "Layout Extraction: Scanned, encrypted, columns-based, or diagram-rich PDFs contain text streams that local parsers cannot always extract cleanly.",
+                                    stringResource(R.string.import_helper_bullet2),
                                     color = c.textSecondary,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
@@ -533,7 +534,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             ) {
                                 Text("•", color = Color(0xFF9333EA), fontWeight = FontWeight.Bold)
                                 Text(
-                                    "Video Transcripts: YouTube restriction policies (like geo-fencing, age gates, or disabled captions) block client-side access to full transcripts.",
+                                    stringResource(R.string.import_helper_bullet3),
                                     color = c.textSecondary,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
@@ -543,7 +544,7 @@ fun ImportTab(viewModel: StudyViewModel) {
 
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "THE ULTIMATE COPIABLE AGENT PROMPT",
+                            text = stringResource(R.string.import_helper_prompt_label),
                             color = Color(0xFF7E22CE),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
@@ -604,7 +605,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 Button(
                                     onClick = {
                                         clipboardManager.setText(AnnotatedString(promptTemplate))
-                                        AppSnackbar.show("Copied Prompt to Clipboard!")
+                                        AppSnackbar.show(context.getString(R.string.import_prompt_copied))
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E22CE)),
@@ -617,11 +618,11 @@ fun ImportTab(viewModel: StudyViewModel) {
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.ContentCopy,
-                                            contentDescription = "Copy Prompt",
+                                            contentDescription = stringResource(R.string.import_copy_prompt_desc),
                                             tint = Color.White,
                                             modifier = Modifier.size(16.dp)
                                         )
-                                        Text("COPY AGENT PROMPT", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                        Text(stringResource(R.string.import_copy_agent_prompt), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                     }
                                 }
                             }
@@ -629,14 +630,14 @@ fun ImportTab(viewModel: StudyViewModel) {
 
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = "💡 How to import the result:",
+                            text = stringResource(R.string.import_how_to_title),
                             color = c.textPrimary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "1. Copy the prompt above and paste it into ChatGPT, Claude, or Gemini Advanced.\n2. Paste your long PDF text or video transcript at the bottom of the prompt.\n3. Run it, copy the resulting JSON, and switch to the '📝 Paste' tab above.\n4. Paste the JSON directly and tap 'PARSE DECK WITH AI' to import instantly!",
+                            text = stringResource(R.string.import_how_to_steps),
                             color = c.textSecondary,
                             fontSize = 11.sp,
                             lineHeight = 15.sp
@@ -687,7 +688,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Ready to parse • ${formatFileSize(attachedFileSize)}",
+                                text = stringResource(R.string.import_ready_to_parse, formatFileSize(attachedFileSize)),
                                 color = c.textSecondary,
                                 fontSize = 12.sp
                             )
@@ -702,7 +703,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Remove file",
+                                contentDescription = stringResource(R.string.import_remove_file_desc),
                                 tint = c.textFaint
                             )
                         }
@@ -723,12 +724,12 @@ fun ImportTab(viewModel: StudyViewModel) {
                 placeholder = {
                     Text(
                         text = if (attachedFileUri != null) {
-                            "Add optional instructions or custom context for parsing the attached file (e.g. 'Focus on medical phrases only', 'Only extract verbs')..."
+                            stringResource(R.string.import_ph_file)
                         } else {
                             when (selectedImportMode) {
-                                "YouTube" -> "Paste any YouTube video link here...\ne.g., https://www.youtube.com/watch?v=Y8YAs_76Iio"
-                                "PDF" -> "Paste copied PDF text, book chapters, public PDF link, or tap 'LOAD FILE' below..."
-                                else -> "Paste vocabulary list here:\n- Bonjour: Hello\n- Arigatou: Thank you\nOr paste any natural prose paragraphs!"
+                                "YouTube" -> stringResource(R.string.import_ph_youtube)
+                                "PDF" -> stringResource(R.string.import_ph_pdf)
+                                else -> stringResource(R.string.import_ph_text)
                             }
                         },
                         color = c.textFaint,
@@ -764,14 +765,14 @@ fun ImportTab(viewModel: StudyViewModel) {
                     .testTag("import_topic_hint_input"),
                 placeholder = {
                     Text(
-                        text = "e.g. 'Swedish', 'French idioms', 'Medical vocabulary'",
+                        text = stringResource(R.string.import_hint_ph),
                         color = c.textFaint,
                         fontSize = 14.sp
                     )
                 },
                 label = {
                     Text(
-                        text = "Focus Language or Topic (Highly Recommended)",
+                        text = stringResource(R.string.import_hint_label),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -823,11 +824,11 @@ fun ImportTab(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.CloudUpload,
-                            contentDescription = "Upload local file",
+                            contentDescription = stringResource(R.string.import_upload_desc),
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
-                            text = "LOAD LOCAL FILE (.PDF / .TXT / .CSV / .JSON)",
+                            text = stringResource(R.string.import_load_file),
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
                             letterSpacing = 0.5.sp
@@ -842,7 +843,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Tap to test with a preloaded educational video link:",
+                        text = stringResource(R.string.import_yt_test_label),
                         color = c.textSecondary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -862,7 +863,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             border = BorderStroke(1.dp, c.hairline),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text("🇫🇷 French Song Lesson", fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(stringResource(R.string.import_yt_sample_fr), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         OutlinedButton(
                             onClick = {
@@ -875,7 +876,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             border = BorderStroke(1.dp, c.hairline),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text("🇯🇵 Tokyo Travel Phrases", fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(stringResource(R.string.import_yt_sample_jp), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }
@@ -923,13 +924,13 @@ fun ImportTab(viewModel: StudyViewModel) {
                             }
                             Column {
                                 Text(
-                                    text = "Smart Merge & Enrich",
+                                    text = stringResource(R.string.import_merge_title),
                                     color = if (isMergeEnabled) c.success else c.textPrimary,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Append terms to a unified master pool",
+                                    text = stringResource(R.string.import_merge_sub),
                                     color = c.textSecondary,
                                     fontSize = 11.sp
                                 )
@@ -951,7 +952,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "SELECT TARGET STUDY POOL / DECK:",
+                            text = stringResource(R.string.import_merge_select),
                             color = c.success,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -985,7 +986,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Text(
-                                        text = targetDeck?.name ?: "Select study pool...",
+                                        text = targetDeck?.name ?: stringResource(R.string.import_merge_select_ph),
                                         color = c.textPrimary,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold
@@ -993,7 +994,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 }
                                 Icon(
                                     imageVector = Icons.Default.ArrowDropDown,
-                                    contentDescription = "Dropdown",
+                                    contentDescription = stringResource(R.string.import_dropdown_desc),
                                     tint = c.success
                                 )
                             }
@@ -1025,7 +1026,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                                         fontSize = 13.sp
                                                     )
                                                     Text(
-                                                        text = "${deckWithCards.flashcards.size} cards",
+                                                        text = stringResource(R.string.import_card_count, deckWithCards.flashcards.size),
                                                         color = Color.Gray,
                                                         fontSize = 11.sp
                                                     )
@@ -1058,7 +1059,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    text = "Smart merge will automatically check for existing terms in the target pool. New context sentences are appended to existing cards instead of creating duplicates!",
+                                    text = stringResource(R.string.import_merge_info),
                                     color = c.success,
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
@@ -1101,13 +1102,13 @@ fun ImportTab(viewModel: StudyViewModel) {
                         }
                         Column {
                             Text(
-                                text = "Card Extraction Density",
+                                text = stringResource(R.string.import_density_title),
                                 color = c.textPrimary,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Tune flashcard generation volume per chunk",
+                                text = stringResource(R.string.import_density_sub),
                                 color = c.textSecondary,
                                 fontSize = 11.sp
                             )
@@ -1125,9 +1126,9 @@ fun ImportTab(viewModel: StudyViewModel) {
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         val densityOptions = listOf(
-                            "Focused" to "🎯 Focused",
-                            "Balanced" to "⚖️ Balanced",
-                            "Exhaustive" to "🧬 Exhaustive"
+                            "Focused" to stringResource(R.string.import_density_focused),
+                            "Balanced" to stringResource(R.string.import_density_balanced),
+                            "Exhaustive" to stringResource(R.string.import_density_exhaustive)
                         )
                         densityOptions.forEach { (densityKey, label) ->
                             val isSelected = selectedDensity == densityKey
@@ -1150,9 +1151,9 @@ fun ImportTab(viewModel: StudyViewModel) {
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
                                         text = when (densityKey) {
-                                            "Focused" -> "8-10 cards"
-                                            "Balanced" -> "All unique vocab"
-                                            "Exhaustive" -> "Uncapped (full document)"
+                                            "Focused" -> stringResource(R.string.import_density_focused_hint)
+                                            "Balanced" -> stringResource(R.string.import_density_balanced_hint)
+                                            "Exhaustive" -> stringResource(R.string.import_density_exhaustive_hint)
                                             else -> ""
                                         },
                                         color = if (isSelected) c.accent.copy(alpha = 0.7f) else c.textFaint,
@@ -1214,7 +1215,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                     ) {
                         Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, tint = c.onAccent)
                         Text(
-                            text = if (selectedImportMode == "YouTube") "AUTOMAGIC GENERATE" else "PARSE DECK WITH AI",
+                            text = if (selectedImportMode == "YouTube") stringResource(R.string.import_btn_generate) else stringResource(R.string.import_btn_parse),
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp,
                             letterSpacing = 1.sp,
@@ -1259,7 +1260,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Dismiss",
+                            contentDescription = stringResource(R.string.import_dismiss_desc),
                             tint = c.danger,
                             modifier = Modifier.size(20.dp)
                         )
@@ -1292,13 +1293,13 @@ fun ImportTab(viewModel: StudyViewModel) {
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Deck saved: ${currentImportState.deckName}",
+                            text = stringResource(R.string.import_deck_saved, currentImportState.deckName),
                             color = c.success,
                             fontSize = 13.sp
                         )
                         if (currentImportState.undoable) {
                             Text(
-                                text = "Undo this merge",
+                                text = stringResource(R.string.import_undo_merge),
                                 color = c.accent,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
@@ -1314,7 +1315,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Dismiss",
+                            contentDescription = stringResource(R.string.import_dismiss_desc),
                             tint = c.success,
                             modifier = Modifier.size(20.dp)
                         )
