@@ -195,7 +195,7 @@ fun TutorialTab() {
 
         item {
             Text(
-                text = "AdaptiveFlow v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                text = stringResource(R.string.version_footer, stringResource(R.string.app_name), BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
                 color = c.textFaint,
                 fontSize = 11.sp,
                 textAlign = TextAlign.Center,

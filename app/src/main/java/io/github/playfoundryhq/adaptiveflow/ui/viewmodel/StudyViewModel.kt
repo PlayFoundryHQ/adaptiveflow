@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.playfoundryhq.adaptiveflow.AdaptiveFlowApp
+import io.github.playfoundryhq.adaptiveflow.R
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -190,31 +191,24 @@ class StudyViewModel(
 
     private fun noKeyMessage(): String {
         val name = _aiProviderId.value.displayName
-        return "AI features need an API key. Add your $name key in Settings, or paste a plain " +
-            "\"word: meaning\" list to import offline."
+        return getApplication<android.app.Application>().getString(R.string.err_no_key, name)
     }
 
     /** Turns an [AiException] into a short, actionable sentence for the user. */
     private fun friendlyAiError(e: AiException): String {
+        val ctx = getApplication<android.app.Application>()
         val name = _aiProviderId.value.displayName
         val other = if (_aiProviderId.value == AiProviderId.GEMINI) "DeepSeek" else "Gemini"
         val base = e.message?.trim().orEmpty()
         return when (e.kind) {
             AiException.Kind.AUTH ->
-                "$name rejected the request${if (base.isNotEmpty()) " ($base)" else ""}. " +
-                    "Check the key or your account balance in Settings, or switch to $other."
-            AiException.Kind.RATE_LIMIT ->
-                "$name is rate-limiting requests. Wait a moment and try again."
-            AiException.Kind.NETWORK ->
-                "Couldn't reach $name — check your connection and try again."
-            AiException.Kind.PAYLOAD_TOO_LARGE ->
-                "That input is too large for $name in one go. Split it into smaller parts."
-            AiException.Kind.TRANSIENT ->
-                "$name is temporarily unavailable. Try again shortly."
-            AiException.Kind.EMPTY ->
-                "$name returned nothing usable. Try rephrasing, or switch to $other."
-            else ->
-                base.ifEmpty { "$name couldn't complete that request." }
+                ctx.getString(R.string.err_ai_auth, name, if (base.isNotEmpty()) " ($base)" else "", other)
+            AiException.Kind.RATE_LIMIT -> ctx.getString(R.string.err_ai_rate_limit, name)
+            AiException.Kind.NETWORK -> ctx.getString(R.string.err_ai_network, name)
+            AiException.Kind.PAYLOAD_TOO_LARGE -> ctx.getString(R.string.err_ai_payload, name)
+            AiException.Kind.TRANSIENT -> ctx.getString(R.string.err_ai_transient, name)
+            AiException.Kind.EMPTY -> ctx.getString(R.string.err_ai_empty, name, other)
+            else -> base.ifEmpty { ctx.getString(R.string.err_ai_generic, name) }
         }
     }
 
@@ -494,7 +488,7 @@ class StudyViewModel(
                 repository.insertChatLog(ChatLog(deckId = deck.id, sender = "ai", message = friendlyAiError(e)))
             } catch (e: Exception) {
                 Log.e("StudyViewModel", "tutor error", e)
-                repository.insertChatLog(ChatLog(deckId = deck.id, sender = "ai", message = "Lost connection to the tutor — check your network and try again."))
+                repository.insertChatLog(ChatLog(deckId = deck.id, sender = "ai", message = getApplication<android.app.Application>().getString(R.string.err_tutor_connection)))
             } finally {
                 withContext(Dispatchers.Main) { _isAiLoading.value = false }
             }

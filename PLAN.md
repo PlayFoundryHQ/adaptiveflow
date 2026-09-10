@@ -354,11 +354,11 @@ Each phase ends with a **green** `./gradlew lintDebug testDebugUnitTest assemble
 - [ ] Quiz distractors from same deck only (D8)
 - [ ] Session‑complete tracks answered, not flipped (U6)
 - [ ] `OpenDocument` with MIME filter (U7); deprecation warning pass (U9); consistent Snackbars (U8)
-- [ ] Design‑system pass: kill the inline `Color`/`dp`/string literals feature by feature (U1)
-- [ ] Roborazzi snapshots of real screens (T3)
+- [~] Design‑system pass (U1): `AdaptiveFlowTheme` + dark mode done; **all string literals now externalised**; inline `Color(0x…)`/`.dp` literals still to go
+- [x] Roborazzi snapshots of real screens (T3) — `ScreenshotTest` (Guide light/dark, pillar item), refs in `app/src/test/screenshots/`, `changeThreshold = 0.05`; plain `testDebugUnitTest` renders them as a crash smoke-test, `record`/`verifyRoborazziDebug` for pixel diffs (v0.5.0)
 
 ### Phase 4 — Release polish
-- [ ] Real launcher icon + `strings.xml` fully populated + Play‑store‑grade README
+- [x] `strings.xml` fully populated — every user-facing UI string across all screens + dynamic AI/import error messages externalised; lint `StringFormat*` guards the format args (v0.5.0). Remaining: real launcher icon + Play-store-grade README
 - [ ] Backup rules decided (B14); privacy note for the Gemini calls
 - [ ] Reinstate release‑please **with** its config files, or a manual version bump flow, once commits are conventional
 - [ ] Landing page (port Slim's `scripts/landing-page.html` pattern) if a Pages site is wanted

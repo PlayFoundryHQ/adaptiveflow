@@ -1,6 +1,7 @@
 package io.github.playfoundryhq.adaptiveflow.domain
 
 import android.content.Context
+import io.github.playfoundryhq.adaptiveflow.R
 import android.net.Uri
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -91,8 +92,7 @@ class ImportPipeline(
 
         if (fileUri == null && ImportParsing.isYouTubeUrl(rawText.trim()) && topicHint.isBlank()) {
             _state.value = ImportState.Error(
-                "A YouTube link alone isn't enough — AdaptiveFlow can't read the video's captions. " +
-                    "Add a Focus/Topic hint (e.g. \"Swedish hobbies vocabulary\") describing what it covers."
+                appContext.getString(R.string.err_import_youtube_bare)
             )
             return
         }
@@ -144,7 +144,7 @@ class ImportPipeline(
 
                 if (fileUri != null) {
                     val tempFile = copyUriToCacheFile(fileUri)
-                        ?: throw Exception("Could not read the selected file.")
+                        ?: throw Exception(appContext.getString(R.string.err_import_file_unreadable))
                     try {
                         val mime = appContext.contentResolver.getType(fileUri).orEmpty()
                         val isPdf = mime.contains("pdf", true) || fileUri.toString().endsWith(".pdf", true)
@@ -156,16 +156,13 @@ class ImportPipeline(
                                 pdfPageTexts = pages
                             } else if (provider.supportsPdfBytes) {
                                 pdfBytes = tempFile.readBytes().takeIf { it.isNotEmpty() }
-                                    ?: throw Exception("The PDF is empty or unreadable.")
+                                    ?: throw Exception(appContext.getString(R.string.err_import_pdf_empty))
                             } else {
-                                throw Exception(
-                                    "This looks like a scanned PDF with no selectable text. " +
-                                        "${providerDisplayName()} can't read those — switch to Gemini in Settings, or use a text-based PDF."
-                                )
+                                throw Exception(appContext.getString(R.string.err_import_pdf_scanned, providerDisplayName()))
                             }
                         } else {
                             val text = (fileText ?: tempFile.inputStream().bufferedReader().use { it.readText() }).take(150_000)
-                            if (text.isBlank()) throw Exception("The selected text file is empty.")
+                            if (text.isBlank()) throw Exception(appContext.getString(R.string.err_import_txt_empty))
                             attachedText = if (attachedText.isBlank()) text else "$attachedText\n\n--- Attached file ---\n$text"
                         }
                     } finally {
@@ -204,7 +201,7 @@ class ImportPipeline(
                         }
                         cards += result.cards
                     }
-                    if (cards.isEmpty()) throw Exception("No flashcards could be extracted from the PDF.")
+                    if (cards.isEmpty()) throw Exception(appContext.getString(R.string.err_import_pdf_no_cards))
                     _state.value = saveOrMergeCards(mergeDeckId, deckName, srcLang, tgtLang, ImportParsing.filterOutUrlEchoCards(cards))
                     return@launch
                 }
@@ -218,8 +215,8 @@ class ImportPipeline(
                 if (realCards.isEmpty()) {
                     _state.value = ImportState.Error(
                         if (ImportParsing.isYouTubeUrl(rawText.trim()))
-                            "Couldn't build a deck from that video — try a more specific Focus/Topic hint."
-                        else "Couldn't extract any flashcards. Check your input has real content."
+                            appContext.getString(R.string.err_import_youtube_vague)
+                        else appContext.getString(R.string.err_import_no_content)
                     )
                     return@launch
                 }
@@ -233,7 +230,7 @@ class ImportPipeline(
                 _state.value = ImportState.Error(friendlyError(e))
             } catch (e: Exception) {
                 Log.e("ImportPipeline", "import failed", e)
-                _state.value = ImportState.Error(e.message ?: "Import failed.")
+                _state.value = ImportState.Error(e.message ?: appContext.getString(R.string.err_import_generic))
             }
         }
     }

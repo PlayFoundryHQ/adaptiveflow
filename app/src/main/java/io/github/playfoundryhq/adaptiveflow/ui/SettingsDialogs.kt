@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.playfoundryhq.adaptiveflow.R
+import androidx.compose.ui.res.stringResource
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiProviderId
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
@@ -106,30 +107,30 @@ fun ApiKeySettingsDialog(
                 onClick = {
                     viewModel.saveApiKey(selectedProvider, inputKey)
                     viewModel.setAiProvider(selectedProvider)
-                    AppSnackbar.show("Saved. Using ${selectedProvider.displayName}.")
+                    AppSnackbar.show(context.getString(R.string.key_dialog_saved, selectedProvider.displayName))
                     onDismiss()
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = c.accent),
                 shape = RoundedCornerShape(10.dp)
-            ) { Text("Save & use") }
+            ) { Text(stringResource(R.string.key_dialog_save)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel", color = c.textSecondary) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = c.textSecondary) }
         },
         title = {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.VpnKey, null, tint = c.accent, modifier = Modifier.size(28.dp))
-                Text("AI provider & key", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
+                Text(stringResource(R.string.key_dialog_title), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
             }
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    "AdaptiveFlow uses your own API key — nothing is bundled or shared. Pick a provider and paste its key. Without a key, AI import and the tutor are off, but you can still import a plain \"word: meaning\" list offline.",
+                    stringResource(R.string.key_dialog_blurb),
                     fontSize = 12.sp, color = c.textSecondary, lineHeight = 16.sp
                 )
                 Text(
-                    "When a key is set, the text you import and your tutor messages are sent to that provider (Google or DeepSeek) for processing, under their terms. Your key is stored encrypted on this device only.",
+                    stringResource(R.string.key_dialog_privacy),
                     fontSize = 11.sp, color = c.textFaint, lineHeight = 15.sp
                 )
 
@@ -162,8 +163,8 @@ fun ApiKeySettingsDialog(
                             tint = if (hasActiveKey) c.success else c.warning, modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            if (hasActiveKey) "AI ready — using ${activeProvider.displayName}."
-                            else "No key set. AI import & tutor are off; offline list import still works.",
+                            if (hasActiveKey) stringResource(R.string.key_dialog_ready, activeProvider.displayName)
+                            else stringResource(R.string.key_dialog_no_key),
                             fontSize = 12.sp, fontWeight = FontWeight.Medium,
                             color = if (hasActiveKey) c.success else c.warning
                         )
@@ -173,7 +174,7 @@ fun ApiKeySettingsDialog(
                 OutlinedTextField(
                     value = inputKey,
                     onValueChange = { inputKey = it },
-                    label = { Text("${selectedProvider.displayName} API key") },
+                    label = { Text(stringResource(R.string.key_field_label, selectedProvider.displayName)) },
                     placeholder = { Text(keyHint) },
                     modifier = Modifier.fillMaxWidth().testTag("api_key_input"),
                     shape = RoundedCornerShape(10.dp),
@@ -183,7 +184,7 @@ fun ApiKeySettingsDialog(
                         IconButton(onClick = { isKeyVisible = !isKeyVisible }) {
                             Icon(
                                 if (isKeyVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = if (isKeyVisible) "Hide" else "Show", tint = c.textSecondary
+                                contentDescription = stringResource(if (isKeyVisible) R.string.action_hide else R.string.action_show), tint = c.textSecondary
                             )
                         }
                     },
@@ -197,14 +198,14 @@ fun ApiKeySettingsDialog(
                         onClick = {
                             viewModel.saveApiKey(selectedProvider, "")
                             inputKey = ""
-                            AppSnackbar.show("${selectedProvider.displayName} key cleared.")
+                            AppSnackbar.show(context.getString(R.string.key_dialog_cleared, selectedProvider.displayName))
                         },
                         colors = ButtonDefaults.textButtonColors(contentColor = c.danger),
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
-                            Text("Clear key", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.key_dialog_clear), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -213,14 +214,14 @@ fun ApiKeySettingsDialog(
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Need a key?", fontSize = 11.sp, color = c.textSecondary)
+                    Text(stringResource(R.string.key_dialog_need_key), fontSize = 11.sp, color = c.textSecondary)
                     Text(
-                        "Get one from ${selectedProvider.displayName}",
+                        stringResource(R.string.key_dialog_get_from, selectedProvider.displayName),
                         fontSize = 11.sp, color = c.accent, fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             runCatching {
                                 context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(keyUrl)))
-                            }.onFailure { AppSnackbar.show("Could not open browser") }
+                            }.onFailure { AppSnackbar.show(context.getString(R.string.open_browser_failed)) }
                         }
                     )
                 }
@@ -254,22 +255,22 @@ fun LearningGoalSettingsDialog(
             Button(
                 onClick = {
                     if (nativeInput.isBlank() || targetInput.isBlank()) {
-                        AppSnackbar.show("Languages cannot be empty!")
+                        AppSnackbar.show(context.getString(R.string.goal_empty))
                     } else {
                         viewModel.updateLearningGoal(nativeInput, targetInput)
-                        AppSnackbar.show("Learning goal updated to $targetInput!")
+                        AppSnackbar.show(context.getString(R.string.goal_updated, targetInput))
                         onDismiss()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = c.accent),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Apply Goal")
+                Text(stringResource(R.string.goal_apply))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = c.textSecondary)
+                Text(stringResource(R.string.action_cancel), color = c.textSecondary)
             }
         },
         title = {
@@ -284,7 +285,7 @@ fun LearningGoalSettingsDialog(
                     modifier = Modifier.size(28.dp)
                 )
                 Text(
-                    text = "My Study Goal Profile",
+                    text = stringResource(R.string.goal_title),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = c.textPrimary
@@ -297,17 +298,17 @@ fun LearningGoalSettingsDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Your learning goal shapes AI card generation, the tutor's replies, and deck suggestions.",
+                    text = stringResource(R.string.goal_blurb),
                     fontSize = 12.sp,
                     color = c.textSecondary,
                     lineHeight = 16.sp
                 )
                 
-                Text("Native Language (Source)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
+                Text(stringResource(R.string.goal_native_label), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
                 OutlinedTextField(
                     value = nativeInput,
                     onValueChange = { nativeInput = it },
-                    placeholder = { Text("e.g. English") },
+                    placeholder = { Text(stringResource(R.string.goal_native_hint)) },
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth(),
@@ -339,11 +340,11 @@ fun LearningGoalSettingsDialog(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                Text("Language to Learn (Target)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
+                Text(stringResource(R.string.goal_target_label), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
                 OutlinedTextField(
                     value = targetInput,
                     onValueChange = { targetInput = it },
-                    placeholder = { Text("e.g. Swedish") },
+                    placeholder = { Text(stringResource(R.string.goal_target_hint)) },
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth(),
