@@ -89,7 +89,7 @@ class ImportPipeline(
     ) {
         if (rawText.isBlank() && fileUri == null) return
 
-        if (fileUri == null && isYouTubeUrl(rawText.trim()) && topicHint.isBlank()) {
+        if (fileUri == null && ImportParsing.isYouTubeUrl(rawText.trim()) && topicHint.isBlank()) {
             _state.value = ImportState.Error(
                 "A YouTube link alone isn't enough — AdaptiveFlow can't read the video's captions. " +
                     "Add a Focus/Topic hint (e.g. \"Swedish hobbies vocabulary\") describing what it covers."
@@ -123,8 +123,8 @@ class ImportPipeline(
                 }
 
                 // 2. Honest offline: a plain "word: meaning" list.
-                if (input.isNotEmpty() && fileUri == null && !isYouTubeUrl(input)) {
-                    parseRawTextLocally(input, topicHint)?.let { local ->
+                if (input.isNotEmpty() && fileUri == null && !ImportParsing.isYouTubeUrl(input)) {
+                    ImportParsing.parseRawTextLocally(input, topicHint)?.let { local ->
                         setMessage("Importing list offline…")
                         _state.value = saveOrMergeCards(mergeDeckId, local.deckName, local.sourceLanguage, local.targetLanguage, local.cards)
                         return@launch
@@ -205,7 +205,7 @@ class ImportPipeline(
                         cards += result.cards
                     }
                     if (cards.isEmpty()) throw Exception("No flashcards could be extracted from the PDF.")
-                    _state.value = saveOrMergeCards(mergeDeckId, deckName, srcLang, tgtLang, filterOutUrlEchoCards(cards))
+                    _state.value = saveOrMergeCards(mergeDeckId, deckName, srcLang, tgtLang, ImportParsing.filterOutUrlEchoCards(cards))
                     return@launch
                 }
 
@@ -213,11 +213,11 @@ class ImportPipeline(
                 val system = Prompts.importSystem(nativeLanguage(), targetLanguage(), densityInstruction)
                 val user = Prompts.importUser(attachedText, topicHint, densityInstruction)
                 val responseText = provider.generateStructured(system, user, pdfBytes = pdfBytes)
-                val parsed = robustParseJsonDeck(cleanAndExtractJson(responseText))
-                val realCards = filterOutUrlEchoCards(parsed.cards)
+                val parsed = ImportParsing.robustParseJsonDeck(moshi, ImportParsing.cleanAndExtractJson(responseText))
+                val realCards = ImportParsing.filterOutUrlEchoCards(parsed.cards)
                 if (realCards.isEmpty()) {
                     _state.value = ImportState.Error(
-                        if (isYouTubeUrl(rawText.trim()))
+                        if (ImportParsing.isYouTubeUrl(rawText.trim()))
                             "Couldn't build a deck from that video — try a more specific Focus/Topic hint."
                         else "Couldn't extract any flashcards. Check your input has real content."
                     )
@@ -331,7 +331,7 @@ class ImportPipeline(
                 val system = Prompts.importSystem(nativeLanguage(), targetLanguage(), densityInstruction, chunkLabel)
                 val user = Prompts.importUser("Document text chunk:\n$chunkText", topicHint, densityInstruction)
                 val responseText = provider.generateStructured(system, user)
-                return robustParseJsonDeck(cleanAndExtractJson(responseText))
+                return ImportParsing.robustParseJsonDeck(moshi, ImportParsing.cleanAndExtractJson(responseText))
             } catch (e: Exception) {
                 lastError = e
                 Log.e("ImportPipeline", "chunk $chunkLabel attempt $attempts/$maxAttempts failed", e)
@@ -389,88 +389,6 @@ class ImportPipeline(
         "Exhaustive" -> "Extract every unique term, phrase, definition and formula. Do not cap the count."
         else -> if (chunked) "Extract all unique vocabulary and key definitions — aim for 15–25 cards, don't truncate."
         else "For short input generate 15–25 cards; for long input extract everything found."
-    }
-
-    // ---- JSON extraction / repair ----
-
-    fun cleanAndExtractJson(raw: String): String {
-        var text = raw.trim()
-        if (text.startsWith("```")) {
-            val firstNewLine = text.indexOf('\n')
-            if (firstNewLine != -1) text = text.substring(firstNewLine).trim()
-            if (text.endsWith("```")) text = text.substring(0, text.length - 3).trim()
-        }
-        val firstBrace = text.indexOf('{')
-        val firstBracket = text.indexOf('[')
-        if (firstBrace != -1 && (firstBracket == -1 || firstBrace < firstBracket)) {
-            val lastBrace = text.lastIndexOf('}')
-            if (lastBrace > firstBrace) return text.substring(firstBrace, lastBrace + 1)
-        } else if (firstBracket != -1) {
-            val lastBracket = text.lastIndexOf(']')
-            if (lastBracket > firstBracket) return text.substring(firstBracket, lastBracket + 1)
-        }
-        return text
-    }
-
-    fun robustParseJsonDeck(jsonText: String): ParsedDeck {
-        val trimmed = jsonText.trim()
-        runCatching {
-            moshi.adapter(ParsedDeck::class.java).fromJson(trimmed)?.takeIf { it.cards.isNotEmpty() }
-        }.getOrNull()?.let { return it }
-
-        runCatching {
-            val type = Types.newParameterizedType(List::class.java, ParsedCard::class.java)
-            moshi.adapter<List<ParsedCard>>(type).fromJson(trimmed)?.takeIf { it.isNotEmpty() }
-        }.getOrNull()?.let { return ParsedDeck(cards = it) }
-
-        throw AiException("The AI response was not valid flashcard JSON.", AiException.Kind.EMPTY)
-    }
-
-    fun isYouTubeUrl(text: String): Boolean =
-        Regex("""(youtube\.com/(watch|shorts)|youtu\.be/|m\.youtube\.com)""", RegexOption.IGNORE_CASE)
-            .containsMatchIn(text)
-
-    private fun looksLikeUrlFragment(text: String): Boolean {
-        val t = text.trim()
-        return t.startsWith("http", true) || t.startsWith("//") ||
-            t.equals("http", true) || t.equals("https", true) ||
-            t.contains("youtu.be") || t.contains("youtube.com")
-    }
-
-    fun filterOutUrlEchoCards(cards: List<ParsedCard>): List<ParsedCard> =
-        cards.filterNot { looksLikeUrlFragment(it.front) || looksLikeUrlFragment(it.back) }
-
-    fun parseRawTextLocally(rawText: String, topicHint: String): ParsedDeck? {
-        val lines = rawText.lines().map { it.trim() }
-            .filter { it.isNotEmpty() && !it.startsWith("#") && !it.startsWith("//") }
-        if (lines.isEmpty()) return null
-
-        var colon = 0; var hyphen = 0; var eq = 0
-        for (l in lines) when {
-            l.contains(":") -> colon++
-            l.contains(" - ") || l.contains(" – ") -> hyphen++
-            l.contains("=") -> eq++
-        }
-        val sep = when {
-            colon >= 1 -> ":"
-            hyphen >= 1 -> "-"
-            eq >= 1 -> "="
-            else -> return null
-        }
-        val cards = lines.mapNotNull { line ->
-            val parts = line.split(sep, limit = 2)
-            if (parts.size != 2) return@mapNotNull null
-            val front = parts[0].trim().removePrefix("-").removePrefix("*").trim()
-            val back = parts[1].trim()
-            if (front.isEmpty() || back.isEmpty()) null else ParsedCard(front, back, "")
-        }
-        if (cards.isEmpty()) return null
-        return ParsedDeck(
-            deckName = topicHint.ifBlank { "📋 Imported list" },
-            sourceLanguage = "Auto",
-            targetLanguage = "English",
-            cards = cards,
-        )
     }
 
     // ---- file helpers ----
