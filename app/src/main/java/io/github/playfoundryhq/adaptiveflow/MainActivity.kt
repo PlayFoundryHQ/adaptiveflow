@@ -1,7 +1,9 @@
 package io.github.playfoundryhq.adaptiveflow
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import io.github.playfoundryhq.adaptiveflow.data.settings.LocaleManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -57,6 +59,10 @@ import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 
 class MainActivity : ComponentActivity() {
     private val viewModel: StudyViewModel by viewModels { StudyViewModel.Factory }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleManager.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

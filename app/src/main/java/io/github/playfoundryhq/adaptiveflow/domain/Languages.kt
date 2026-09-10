@@ -15,6 +15,9 @@ data class Language(
     val english: String,    // display + what we store / send to the model
     val endonym: String,    // the language's own name, shown alongside
     val rtl: Boolean = false,
+    /** True when a `values-<code>` string catalogue ships for this language, so
+     *  picking it as "my language" also switches the app UI. */
+    val uiTranslation: Boolean = false,
 )
 
 object Languages {
@@ -22,7 +25,7 @@ object Languages {
     /** Curated, not exhaustive: the common study languages plus every script we
      *  might localise the UI into. Order = rough global-usage. */
     val all: List<Language> = listOf(
-        Language("en", "English", "English"),
+        Language("en", "English", "English", uiTranslation = true),
         Language("zh", "Chinese", "中文"),
         Language("hi", "Hindi", "हिन्दी"),
         Language("es", "Spanish", "Español"),
@@ -35,7 +38,7 @@ object Languages {
         Language("id", "Indonesian", "Bahasa Indonesia"),
         Language("de", "German", "Deutsch"),
         Language("ja", "Japanese", "日本語"),
-        Language("fa", "Persian", "فارسی", rtl = true),
+        Language("fa", "Persian", "فارسی", rtl = true, uiTranslation = true),
         Language("tr", "Turkish", "Türkçe"),
         Language("ko", "Korean", "한국어"),
         Language("it", "Italian", "Italiano"),
@@ -59,6 +62,11 @@ object Languages {
     }
 
     fun isRtl(value: String?): Boolean = find(value)?.rtl == true
+
+    /** The app-UI locale tag to switch to for a chosen "my language" value, or
+     *  null to fall back to the default (English) catalogue. */
+    fun uiLocaleTag(value: String?): String? =
+        find(value)?.takeIf { it.uiTranslation }?.code
 
     /** "English" -> "English", "fa" -> "Persian · فارسی", unknown -> the raw value. */
     fun label(value: String?): String {

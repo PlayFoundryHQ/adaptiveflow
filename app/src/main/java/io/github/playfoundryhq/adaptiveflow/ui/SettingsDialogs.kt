@@ -1,6 +1,8 @@
 package io.github.playfoundryhq.adaptiveflow.ui
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -66,6 +68,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.playfoundryhq.adaptiveflow.R
 import androidx.compose.ui.res.stringResource
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiProviderId
+import io.github.playfoundryhq.adaptiveflow.data.settings.LocaleManager
 import io.github.playfoundryhq.adaptiveflow.domain.Languages
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
@@ -259,8 +262,15 @@ fun LearningGoalSettingsDialog(
                         AppSnackbar.show(context.getString(R.string.goal_empty))
                     } else {
                         viewModel.updateLearningGoal(nativeInput, targetInput)
-                        AppSnackbar.show(context.getString(R.string.goal_updated, targetInput))
-                        onDismiss()
+                        // "My language" also drives the app UI locale (+ RTL). If it
+                        // changed, the activity recreates and this dialog goes with it.
+                        val activity = context.findActivity()
+                        val localeChanged = activity != null &&
+                            LocaleManager.apply(activity, Languages.uiLocaleTag(nativeInput))
+                        if (!localeChanged) {
+                            AppSnackbar.show(context.getString(R.string.goal_updated, targetInput))
+                            onDismiss()
+                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = c.accent),
@@ -354,6 +364,16 @@ fun LearningGoalSettingsDialog(
 
 /** Sentinel [LanguageDropdown] emits when the learner picks "Other…" for the target. */
 const val OTHER_LANGUAGE = " other"
+
+/** Unwrap the Compose [Context] to the hosting [Activity], if any. */
+fun Context.findActivity(): Activity? {
+    var ctx: Context = this
+    while (ctx is ContextWrapper) {
+        if (ctx is Activity) return ctx
+        ctx = ctx.baseContext
+    }
+    return null
+}
 
 @Composable
 private fun LanguageDropdown(
