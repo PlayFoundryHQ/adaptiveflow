@@ -94,6 +94,7 @@
     <string name="quest_streak_label">Streak</string>
     <string name="quest_xp_value">%1$d XP</string>
     <string name="quest_xp_label">Total Points</string>
+    <string name="quest_crowns_value">%1$d</string>
     <string name="quest_crowns_label">Crowns Earned</string>
     <string name="quest_goal_progress_title">%1$s Goal Progress</string>
     <string name="quest_mastered_count">%1$d of %2$d mastered</string>

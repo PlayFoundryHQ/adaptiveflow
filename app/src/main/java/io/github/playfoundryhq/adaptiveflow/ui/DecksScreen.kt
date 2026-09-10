@@ -331,8 +331,8 @@ fun DecksTab(
                     Text(
                         text = stringResource(
                             R.string.goal_pair,
-                            Languages.label(nativeLanguage),
-                            Languages.label(targetLanguage),
+                            Languages.shortLabel(nativeLanguage),
+                            Languages.shortLabel(targetLanguage),
                         ),
                         color = c.textPrimary,
                         fontSize = 13.sp,

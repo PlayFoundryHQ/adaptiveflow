@@ -73,4 +73,8 @@ object Languages {
         val lang = find(value) ?: return value?.trim().orEmpty()
         return if (lang.english == lang.endonym) lang.english else "${lang.english} · ${lang.endonym}"
     }
+
+    /** Compact form for chips/pills: the language's own name ("فارسی", "Svenska"),
+     *  or the raw value if it's not in the list. */
+    fun shortLabel(value: String?): String = find(value)?.endonym ?: value?.trim().orEmpty()
 }
