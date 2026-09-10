@@ -73,6 +73,7 @@ import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
 import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
+import io.github.playfoundryhq.adaptiveflow.domain.ImportPipeline
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.StudyViewModel
 import java.io.File
 import java.io.FileOutputStream
@@ -114,7 +115,7 @@ fun ImportTab(viewModel: StudyViewModel) {
     var isDeckDropdownExpanded by remember { mutableStateOf(false) }
     var selectedDensity by rememberSaveable { mutableStateOf("Balanced") } // "Focused", "Balanced", "Exhaustive"
 
-    (importState as? StudyViewModel.ImportState.MergePreview)?.let { preview ->
+    (importState as? ImportPipeline.ImportState.MergePreview)?.let { preview ->
         val p = preview.plan
         AlertDialog(
             onDismissRequest = { viewModel.cancelMerge() },
@@ -163,7 +164,7 @@ fun ImportTab(viewModel: StudyViewModel) {
     // Observe Import States to show beautiful messages
     LaunchedEffect(importState) {
         when (importState) {
-            is StudyViewModel.ImportState.Success -> {
+            is ImportPipeline.ImportState.Success -> {
                 // Field clearing happens immediately, but the importState itself is left as Success
                 // so the persistent banner below stays up until the user dismisses it - a plain
                 // Toast.LENGTH_SHORT was easy to miss at the exact moment the form silently reset.
@@ -855,7 +856,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 rawText = "https://www.youtube.com/watch?v=Y8YAs_76Iio"
                                 topicHint = "French (song lyrics and idioms)"
                             },
-                            enabled = importState !is StudyViewModel.ImportState.Loading,
+                            enabled = importState !is ImportPipeline.ImportState.Loading,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp),
                             border = BorderStroke(1.dp, c.hairline),
@@ -868,7 +869,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                                 rawText = "https://www.youtube.com/watch?v=pPy7643bZGo"
                                 topicHint = "Japanese (Tokyo travel phrases)"
                             },
-                            enabled = importState !is StudyViewModel.ImportState.Loading,
+                            enabled = importState !is ImportPipeline.ImportState.Loading,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp),
                             border = BorderStroke(1.dp, c.hairline),
@@ -1178,7 +1179,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                         density = selectedDensity
                     )
                 },
-                enabled = (rawText.isNotBlank() || attachedFileUri != null) && importState !is StudyViewModel.ImportState.Loading,
+                enabled = (rawText.isNotBlank() || attachedFileUri != null) && importState !is ImportPipeline.ImportState.Loading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp)
@@ -1190,7 +1191,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                 shape = RoundedCornerShape(16.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
             ) {
-                if (importState is StudyViewModel.ImportState.Loading) {
+                if (importState is ImportPipeline.ImportState.Loading) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -1200,7 +1201,7 @@ fun ImportTab(viewModel: StudyViewModel) {
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = (importState as StudyViewModel.ImportState.Loading).message,
+                            text = (importState as ImportPipeline.ImportState.Loading).message,
                             color = c.onAccent,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -1225,7 +1226,7 @@ fun ImportTab(viewModel: StudyViewModel) {
         }
 
         val currentImportState = importState
-        if (currentImportState is StudyViewModel.ImportState.Error) {
+        if (currentImportState is ImportPipeline.ImportState.Error) {
             item {
                 // Persistent, dismissible error banner. Replaces a transient Toast (LENGTH_LONG) which
                 // was easy to miss since it auto-dismisses in ~3.5s with no lasting visual change.
@@ -1267,7 +1268,7 @@ fun ImportTab(viewModel: StudyViewModel) {
             }
         }
 
-        if (currentImportState is StudyViewModel.ImportState.Success) {
+        if (currentImportState is ImportPipeline.ImportState.Success) {
             item {
                 // Persistent, dismissible success banner - mirrors the error banner above. Replaces a
                 // plain Toast.LENGTH_SHORT that fired at the exact moment the form silently cleared,
