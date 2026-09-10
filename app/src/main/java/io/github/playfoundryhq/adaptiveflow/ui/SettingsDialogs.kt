@@ -66,6 +66,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.playfoundryhq.adaptiveflow.R
 import androidx.compose.ui.res.stringResource
 import io.github.playfoundryhq.adaptiveflow.data.ai.AiProviderId
+import io.github.playfoundryhq.adaptiveflow.domain.Languages
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
@@ -244,9 +245,9 @@ fun LearningGoalSettingsDialog(
     
     var nativeInput by remember { mutableStateOf(nativeLanguage) }
     var targetInput by remember { mutableStateOf(targetLanguage) }
-    
-    val commonLanguages = listOf("English", "Swedish", "Spanish", "French", "German", "Italian", "Japanese", "Persian")
-    
+    // A target language outside the curated list is entered free-text via "Other…".
+    var targetIsOther by remember { mutableStateOf(targetLanguage.isNotBlank() && Languages.find(targetLanguage) == null) }
+
     val context = LocalContext.current
     
     AlertDialog(
@@ -295,7 +296,7 @@ fun LearningGoalSettingsDialog(
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
                     text = stringResource(R.string.goal_blurb),
@@ -303,79 +304,104 @@ fun LearningGoalSettingsDialog(
                     color = c.textSecondary,
                     lineHeight = 16.sp
                 )
-                
+
                 Text(stringResource(R.string.goal_native_label), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
-                OutlinedTextField(
-                    value = nativeInput,
-                    onValueChange = { nativeInput = it },
-                    placeholder = { Text(stringResource(R.string.goal_native_hint)) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = c.accent,
-                        unfocusedBorderColor = c.textFaint
-                    )
+                LanguageDropdown(
+                    label = if (nativeInput.isBlank()) stringResource(R.string.goal_pick_native) else Languages.label(nativeInput),
+                    onPick = { nativeInput = it },
+                    c = c,
                 )
-                
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(commonLanguages.size) { index ->
-                        val lang = commonLanguages[index]
-                        val isSelected = nativeInput.equals(lang, ignoreCase = true)
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) c.accentMuted else c.surfaceMuted)
-                                .border(1.dp, if (isSelected) c.accent else Color.Transparent, RoundedCornerShape(8.dp))
-                                .clickable { nativeInput = lang }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Text(text = lang, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) c.accent else c.textSecondary)
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(stringResource(R.string.goal_target_label), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.textPrimary)
-                OutlinedTextField(
-                    value = targetInput,
-                    onValueChange = { targetInput = it },
-                    placeholder = { Text(stringResource(R.string.goal_target_hint)) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = c.accent,
-                        unfocusedBorderColor = c.textFaint
-                    )
-                )
-                
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(commonLanguages.size) { index ->
-                        val lang = commonLanguages[index]
-                        val isSelected = targetInput.equals(lang, ignoreCase = true)
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) c.accentMuted else c.surfaceMuted)
-                                .border(1.dp, if (isSelected) c.accent else Color.Transparent, RoundedCornerShape(8.dp))
-                                .clickable { targetInput = lang }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Text(text = lang, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) c.accent else c.textSecondary)
+                LanguageDropdown(
+                    label = when {
+                        targetIsOther -> stringResource(R.string.goal_other)
+                        targetInput.isBlank() -> stringResource(R.string.goal_pick_target)
+                        else -> Languages.label(targetInput)
+                    },
+                    onPick = { picked ->
+                        if (picked == OTHER_LANGUAGE) {
+                            targetIsOther = true
+                            targetInput = ""
+                        } else {
+                            targetIsOther = false
+                            targetInput = picked
                         }
-                    }
+                    },
+                    c = c,
+                    includeOther = true,
+                )
+                if (targetIsOther) {
+                    OutlinedTextField(
+                        value = targetInput,
+                        onValueChange = { targetInput = it },
+                        placeholder = { Text(stringResource(R.string.goal_target_hint)) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = c.accent,
+                            unfocusedBorderColor = c.textFaint
+                        )
+                    )
                 }
             }
         },
         containerColor = c.surface,
         shape = RoundedCornerShape(20.dp)
     )
+}
+
+/** Sentinel [LanguageDropdown] emits when the learner picks "Other…" for the target. */
+const val OTHER_LANGUAGE = " other"
+
+@Composable
+private fun LanguageDropdown(
+    label: String,
+    onPick: (String) -> Unit,
+    c: io.github.playfoundryhq.adaptiveflow.ui.theme.AppColors,
+    includeOther: Boolean = false,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .border(1.dp, c.textFaint, RoundedCornerShape(10.dp))
+                .clickable { expanded = true }
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(label, fontSize = 14.sp, color = c.textPrimary, fontWeight = FontWeight.Medium)
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = c.textSecondary)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .heightIn(max = 320.dp)
+                .background(c.surface)
+        ) {
+            Languages.all.forEach { lang ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            if (lang.english == lang.endonym) lang.english else "${lang.english}  ·  ${lang.endonym}",
+                            fontSize = 13.sp,
+                            color = c.textPrimary
+                        )
+                    },
+                    onClick = { onPick(lang.english); expanded = false }
+                )
+            }
+            if (includeOther) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.goal_other), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.accent) },
+                    onClick = { onPick(OTHER_LANGUAGE); expanded = false }
+                )
+            }
+        }
+    }
 }

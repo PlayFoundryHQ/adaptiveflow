@@ -17,7 +17,7 @@
     <string name="guide_pillar_paste_title">Paste It, Study It</string>
     <string name="guide_pillar_paste_desc">Paste text or a word list, or load a PDF / TXT / CSV. With your own API key, the AI turns it into flashcard pairs. No key? A plain \"word: meaning\" list still imports offline.</string>
     <string name="guide_pillar_goal_title">Set Your Goal Once</string>
-    <string name="guide_pillar_goal_desc">Choose your native and target language on the Quest tab. Every new deck, quiz, and tutor reply is tuned to that goal.</string>
+    <string name="guide_pillar_goal_desc">Set your language and what you\'re learning once — from the pill at the top of Decks or Quest. Every new deck, quiz, and tutor reply is tuned to it.</string>
     <string name="guide_pillar_tutor_title">AI Tutor</string>
     <string name="guide_pillar_tutor_desc">Stuck on a card? Open the tutor chat for pronunciation tips, usage examples, and simpler explanations. Needs an API key.</string>
     <string name="version_footer">%1$s v%2$s (%3$d)</string>
@@ -46,12 +46,16 @@
     <string name="goal_apply">Apply Goal</string>
     <string name="goal_title">My Study Goal Profile</string>
     <string name="goal_blurb">Your learning goal shapes AI card generation, the tutor\'s replies, and deck suggestions.</string>
-    <string name="goal_native_label">Native Language (Source)</string>
-    <string name="goal_target_label">Language to Learn (Target)</string>
-    <string name="goal_native_hint">e.g. English</string>
+    <string name="goal_native_label">My language</string>
+    <string name="goal_target_label">I want to learn</string>
     <string name="goal_target_hint">e.g. Swedish</string>
     <string name="goal_empty">Languages cannot be empty!</string>
     <string name="goal_updated">Learning goal updated to %1$s!</string>
+    <string name="goal_pick_native">Choose your language</string>
+    <string name="goal_pick_target">Choose a language to learn</string>
+    <string name="goal_other">Other…</string>
+    <string name="goal_pair">%1$s → %2$s</string>
+    <string name="goal_edit_desc">Edit learning goal</string>
 
     <!-- Tutor sheet -->
     <string name="tutor_clear_title">Clear tutor chat history?</string>
@@ -78,10 +82,6 @@
     <string name="decks_subtitle">Universal Study Dashboard</string>
     <string name="decks_goal_settings_desc">Active Study Goal Settings</string>
     <string name="decks_create_new_desc">Create New Deck</string>
-    <string name="decks_goal_badge">ACTIVE STUDY GOAL</string>
-    <string name="decks_goal_click_to_edit">• Click to edit</string>
-    <string name="decks_goal_headline">Learn %1$s from %2$s</string>
-    <string name="decks_goal_body">New decks, quizzes, and tutor replies are tuned to %1$s. Tap any deck below to study!</string>
     <string name="decks_fab_desc">New Deck</string>
     <string name="decks_mastery_progress">Mastery Progress</string>
     <string name="decks_mastery_count">%1$d / %2$d Words (%3$d%%)</string>
@@ -95,11 +95,6 @@
     <string name="quest_xp_value">%1$d XP</string>
     <string name="quest_xp_label">Total Points</string>
     <string name="quest_crowns_label">Crowns Earned</string>
-    <string name="quest_goal_badge">UNIFIED QUEST GOAL</string>
-    <string name="quest_goal_body">Manage your global languages directly below. Your adaptive flashcards and tutors will instantly tune to this goal.</string>
-    <string name="quest_goal_config">Goal Configuration</string>
-    <string name="quest_native_label">Your Native Language:</string>
-    <string name="quest_target_label">Language to Learn (Target):</string>
     <string name="quest_goal_progress_title">%1$s Goal Progress</string>
     <string name="quest_mastered_count">%1$d of %2$d mastered</string>
     <string name="quest_active_decks">%1$d active target decks</string>

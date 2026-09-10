@@ -73,6 +73,12 @@ class SettingsStore(context: Context) {
         get() = plain.getString(KEY_TARGET_LANG, "Swedish") ?: "Swedish"
         set(value) = plain.edit().putString(KEY_TARGET_LANG, value.trim()).apply()
 
+    /** False until the learner has confirmed their language pair once (drives
+     *  the one-time first-run goal prompt). */
+    var goalConfigured: Boolean
+        get() = plain.getBoolean(KEY_GOAL_CONFIGURED, false)
+        set(value) = plain.edit().putBoolean(KEY_GOAL_CONFIGURED, value).apply()
+
     // ---- TTS ----
 
     var ttsRate: Float
@@ -99,6 +105,7 @@ class SettingsStore(context: Context) {
         const val KEY_PROVIDER = "ai_provider"
         const val KEY_NATIVE_LANG = "native_language"
         const val KEY_TARGET_LANG = "target_language"
+        const val KEY_GOAL_CONFIGURED = "goal_configured"
         const val KEY_TTS_RATE = "tts_rate"
         const val KEY_TTS_AUTOPLAY = "tts_autoplay"
         const val KEY_HAS_SEEDED = "has_seeded_default_decks"

@@ -70,6 +70,7 @@ import io.github.playfoundryhq.adaptiveflow.data.ai.AiProviderId
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
+import io.github.playfoundryhq.adaptiveflow.domain.Languages
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
 import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
@@ -145,6 +146,12 @@ fun DecksTab(
     val c = AppTheme.colors
     var isSettingsOpen by remember { mutableStateOf(false) }
     var isGoalSettingsOpen by remember { mutableStateOf(false) }
+
+    // First run: prompt for the language pair once. Dismissible — defaults apply if skipped.
+    val goalConfigured by viewModel.goalConfigured.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        if (!goalConfigured) isGoalSettingsOpen = true
+    }
 
     if (isSettingsOpen) {
         ApiKeySettingsDialog(viewModel = viewModel, onDismiss = { isSettingsOpen = false })
@@ -300,75 +307,46 @@ fun DecksTab(
                     }
                 }
 
-                // Beautiful Premium Welcome Banner Card with Active Learning Goal
+                // Compact active-goal pill (replaces the old full-height hero banner)
                 val nativeLanguage by viewModel.nativeLanguage.collectAsStateWithLifecycle()
                 val targetLanguage by viewModel.targetLanguage.collectAsStateWithLifecycle()
 
-                Card(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
-                        .clickable { isGoalSettingsOpen = true },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(c.surfaceMuted)
+                        .clickable { isGoalSettingsOpen = true }
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(c.heroSurface)
-                            .padding(20.dp)
-                    ) {
-                        Column(modifier = Modifier.align(Alignment.CenterStart)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(Color(0xFF0284C7))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.decks_goal_badge),
-                                        color = Color.White,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Black,
-                                        letterSpacing = 0.5.sp
-                                    )
-                                }
-                                Text(
-                                    text = stringResource(R.string.decks_goal_click_to_edit),
-                                    color = c.heroTextMuted.copy(alpha = 0.5f),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = stringResource(R.string.decks_goal_headline, targetLanguage, nativeLanguage),
-                                color = c.heroText,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = stringResource(R.string.decks_goal_body, targetLanguage),
-                                color = c.heroTextMuted,
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.Default.Flag,
-                            contentDescription = null,
-                            tint = c.heroText.copy(alpha = 0.15f),
-                            modifier = Modifier
-                                .size(80.dp)
-                                .align(Alignment.BottomEnd)
-                                .padding(end = 4.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Flag,
+                        contentDescription = null,
+                        tint = c.warning,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.goal_pair,
+                            Languages.label(nativeLanguage),
+                            Languages.label(targetLanguage),
+                        ),
+                        color = c.textPrimary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.goal_edit_desc),
+                        tint = c.textSecondary,
+                        modifier = Modifier.size(15.dp)
+                    )
                 }
 
                 LazyVerticalGrid(

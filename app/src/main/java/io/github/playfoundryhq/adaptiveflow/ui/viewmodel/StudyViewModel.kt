@@ -154,11 +154,17 @@ class StudyViewModel(
     private val _targetLanguage = MutableStateFlow(settings.targetLanguage)
     val targetLanguage: StateFlow<String> = _targetLanguage.asStateFlow()
 
+    private val _goalConfigured = MutableStateFlow(settings.goalConfigured)
+    /** False on a fresh install until the learner confirms their language pair. */
+    val goalConfigured: StateFlow<Boolean> = _goalConfigured.asStateFlow()
+
     fun updateLearningGoal(native: String, target: String) {
         settings.nativeLanguage = native
         settings.targetLanguage = target
+        settings.goalConfigured = true
         _nativeLanguage.value = native.trim()
         _targetLanguage.value = target.trim()
+        _goalConfigured.value = true
     }
 
     fun setAiProvider(id: AiProviderId) {
