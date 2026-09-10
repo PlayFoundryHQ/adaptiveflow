@@ -70,6 +70,7 @@ import io.github.playfoundryhq.adaptiveflow.data.ai.AiProviderId
 import io.github.playfoundryhq.adaptiveflow.data.model.ChatLog
 import io.github.playfoundryhq.adaptiveflow.data.model.Deck
 import io.github.playfoundryhq.adaptiveflow.data.model.Flashcard
+import io.github.playfoundryhq.adaptiveflow.domain.Languages
 import io.github.playfoundryhq.adaptiveflow.ui.components.DiagnosticLogsDialog
 import io.github.playfoundryhq.adaptiveflow.ui.theme.AppTheme
 import io.github.playfoundryhq.adaptiveflow.ui.viewmodel.DiagnosticLogger
@@ -88,7 +89,12 @@ fun PathTab(
     val nativeLanguage by viewModel.nativeLanguage.collectAsStateWithLifecycle()
     val targetLanguage by viewModel.targetLanguage.collectAsStateWithLifecycle()
     var selectedNodeDeck by remember { mutableStateOf<io.github.playfoundryhq.adaptiveflow.data.model.DeckWithCards?>(null) }
+    var isGoalSettingsOpen by remember { mutableStateOf(false) }
     val c = AppTheme.colors
+
+    if (isGoalSettingsOpen) {
+        LearningGoalSettingsDialog(viewModel = viewModel, onDismiss = { isGoalSettingsOpen = false })
+    }
 
     // Compute Crowns
     val crownsCount = remember(decks) {
@@ -195,160 +201,29 @@ fun PathTab(
                 contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Goal Management Header Card
+                // Compact active-goal pill (replaces the old hero card + inline selector panel)
                 item {
-                    Card(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = c.heroSurface)
+                            .padding(horizontal = 16.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(c.surfaceMuted)
+                            .clickable { isGoalSettingsOpen = true }
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(18.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(c.warning)
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.quest_goal_badge),
-                                        color = Color.White,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Black,
-                                        letterSpacing = 0.5.sp
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = stringResource(R.string.decks_goal_headline, targetLanguage, nativeLanguage),
-                                color = c.heroText,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = stringResource(R.string.quest_goal_body),
-                                color = c.heroTextMuted,
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp
-                            )
-                        }
+                        Icon(Icons.Default.Flag, contentDescription = null, tint = c.warning, modifier = Modifier.size(16.dp))
+                        Text(
+                            text = stringResource(R.string.goal_pair, Languages.label(nativeLanguage), Languages.label(targetLanguage)),
+                            color = c.textPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f)
+                        )
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.goal_edit_desc), tint = c.textSecondary, modifier = Modifier.size(15.dp))
                     }
                 }
-
-                // Interactive Goal Selectors Panel
-                item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = c.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .border(1.dp, c.hairline, RoundedCornerShape(16.dp))
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.quest_goal_config),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = c.textPrimary
-                            )
-
-                            // Native Language Selector
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    text = stringResource(R.string.quest_native_label),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = c.textSecondary
-                                )
-                                val nativeOptions = listOf("English", "Spanish", "French", "German")
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    contentPadding = PaddingValues(end = 12.dp)
-                                ) {
-                                    items(nativeOptions) { lang ->
-                                        val isSelected = lang == nativeLanguage
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(if (isSelected) c.accentMuted else c.surfaceMuted)
-                                                .border(
-                                                    1.dp,
-                                                    if (isSelected) c.accent else c.hairline,
-                                                    RoundedCornerShape(8.dp)
-                                                )
-                                                .clickable { viewModel.updateLearningGoal(lang, targetLanguage) }
-                                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                                        ) {
-                                            Text(
-                                                text = lang,
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (isSelected) c.accent else c.textSecondary
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Target Language Selector
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    text = stringResource(R.string.quest_target_label),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = c.textSecondary
-                                )
-                                val targetOptions = listOf("Swedish", "Spanish", "French", "German", "Italian", "Japanese", "Persian")
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    contentPadding = PaddingValues(end = 12.dp)
-                                ) {
-                                    items(targetOptions) { lang ->
-                                        val isSelected = lang == targetLanguage
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(if (isSelected) c.warningMuted else c.surfaceMuted)
-                                                .border(
-                                                    1.dp,
-                                                    if (isSelected) c.warning else c.hairline,
-                                                    RoundedCornerShape(8.dp)
-                                                )
-                                                .clickable { viewModel.updateLearningGoal(nativeLanguage, lang) }
-                                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                                        ) {
-                                            Text(
-                                                text = lang,
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (isSelected) c.warning else c.textSecondary
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
+               
                 // Goal-specific Progress Tracker card
                 item {
                     val matchingCards = matchingDecks.flatMap { it.flashcards }
