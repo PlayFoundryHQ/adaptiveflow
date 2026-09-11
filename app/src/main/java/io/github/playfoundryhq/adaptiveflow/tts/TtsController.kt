@@ -18,9 +18,12 @@ import java.util.Locale
  * Improvements over the old inline version:
  *  - prefers Google's TTS engine (`com.google.android.tts`, neural voices) when
  *    installed, falling back to the system default;
- *  - routes Persian to **AvaCore** (`com.github.opscalehub.avacore`) when it's
- *    installed — a native offline Persian engine with a real NLP front-end
- *    (ezafe, number expansion), audibly better than the generic system voice;
+ *  - routes to **AvaCore** (`com.github.opscalehub.avacore`) — a native offline
+ *    engine with a real Persian NLP front-end (ezafe, number expansion) and
+ *    solid Piper voices for other languages — for *any* language it reports
+ *    supporting, asked live via `TextToSpeech.isLanguageAvailable`; AvaCore's
+ *    own language list can grow (it started Persian-only, now also covers
+ *    English/Swedish) without this controller needing to know about it;
  *  - picks the best [Voice] for the target language (highest quality, not a
  *    not-yet-installed voice, offline preferred);
  *  - surfaces a missing language pack ([missingLanguage]) so the UI can offer to
@@ -52,11 +55,11 @@ class TtsController(context: Context, private val settings: SettingsStore) {
     @Volatile private var engineStarted = false
     private var appliedLanguage: Locale? = null
 
-    // AvaCore (Persian specialist engine) — bound lazily, only the first time a
-    // Persian utterance is actually requested, so users without it installed
-    // (or not studying Persian) never pay for a second engine bind. The very
-    // first Persian utterance in a session may still go through the default
-    // engine while AvaCore finishes binding in the background.
+    // AvaCore — bound as soon as it's detected installed (alongside the default
+    // engine, in prepare()), so every speak() call can ask it live which
+    // language it actually supports rather than this controller hardcoding a
+    // list. The first utterance or two in a session may still go through the
+    // default engine while AvaCore finishes binding in the background.
     @Volatile private var avaEngine: TextToSpeech? = null
     @Volatile private var avaEngineReady = false
     @Volatile private var avaEngineStarted = false
@@ -74,6 +77,7 @@ class TtsController(context: Context, private val settings: SettingsStore) {
         // Binding the engine service can stall the caller for ~2s — do it off
         // whatever thread asked (usually a Compose LaunchedEffect on main).
         Thread({ createEngine() }, "tts-init").start()
+        if (isAvaCoreInstalled()) ensureAvaEngine()
     }
 
     private fun createEngine() {
@@ -113,6 +117,16 @@ class TtsController(context: Context, private val settings: SettingsStore) {
         true
     }.getOrDefault(false)
 
+    /** True when AvaCore is bound and itself reports it can speak [locale] —
+     *  asked live, so its supported-language list can grow without a change
+     *  here. False (not yet an error) while it's still binding. */
+    private fun avaEngineSupports(locale: Locale): Boolean {
+        val engine = avaEngine ?: return false
+        if (!avaEngineReady) return false
+        return runCatching { engine.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE }
+            .getOrDefault(false)
+    }
+
     private val progressListener = object : UtteranceProgressListener() {
         override fun onStart(utteranceId: String?) { _isSpeaking.value = true }
         override fun onDone(utteranceId: String?) { _isSpeaking.value = false }
@@ -132,9 +146,7 @@ class TtsController(context: Context, private val settings: SettingsStore) {
             else -> localeFromLanguageName(deckSourceLanguage ?: "en")
         }
 
-        val wantsAva = shouldUseAvaCore(locale, isAvaCoreInstalled())
-        if (wantsAva) ensureAvaEngine()
-        val useAva = wantsAva && avaEngineReady
+        val useAva = avaEngineSupports(locale)
         val engine = (if (useAva) avaEngine else tts) ?: return
 
         runCatching {
@@ -251,14 +263,11 @@ class TtsController(context: Context, private val settings: SettingsStore) {
     }
 
     companion object {
-        /** AvaCore's package — an offline Persian TTS engine with a real NLP
-         *  front-end, not bundled with AdaptiveFlow. Discovered at runtime; if
-         *  the project ever migrates orgs this is the one line to update. */
+        /** AvaCore's package — an offline TTS engine with a real Persian NLP
+         *  front-end plus Piper voices for other languages, not bundled with
+         *  AdaptiveFlow. Discovered at runtime; if the project ever migrates
+         *  orgs this is the one line to update. */
         const val AVACORE_PACKAGE = "com.github.opscalehub.avacore"
-
-        /** Pure so it's unit-testable without a Context: Persian + AvaCore present. */
-        fun shouldUseAvaCore(locale: Locale, avaCoreInstalled: Boolean): Boolean =
-            avaCoreInstalled && locale.language.equals("fa", ignoreCase = true)
 
         private val NON_LATIN = setOf("fa", "ar", "ja", "zh", "ko", "hi", "he", "el", "ru", "uk", "bg", "th")
 
