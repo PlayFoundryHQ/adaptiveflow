@@ -34,8 +34,12 @@ android {
   }
 
   buildTypes {
+    // Debug builds get their own package name, so they install next to the
+    // release app instead of over it. Two signing keys can never share one
+    // package name — that collision kept blocking release installs on the phone.
     debug {
-      // default debug signing
+      applicationIdSuffix = ".debug"
+      versionNameSuffix = "-debug"
     }
     release {
       isMinifyEnabled = true
